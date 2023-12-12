@@ -17,7 +17,7 @@ parts:
   snapcraft:
     plugin: python
     source: https://github.com/snapcore/snapcraft.git
-    source-tag: 7.5.4
+    source-tag: ${CRAFT_PROJECT_VERSION}
     stage-packages:
       - python3-venv
     python-packages:
