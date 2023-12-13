@@ -1,0 +1,116 @@
+name: snapcraft-core22
+base: ubuntu@22.04
+version: 7.5.4
+summary: easily create core22 snaps
+description: |
+  Snapcraft aims to make upstream developers' lives easier and as such is not
+  a single toolset, but instead is a collection of tools that enable the
+  natural workflow of an upstream to be extended with a simple release step
+  into Snappy.
+  This version of Snapcraft is able to build core22 snaps in destructive mode
+  only.
+license: GPL-3.0
+platforms:
+  amd64: #TODO
+
+parts:
+  snapcraft:
+    plugin: python
+    source: https://github.com/snapcore/snapcraft.git
+    source-tag: ${CRAFT_PROJECT_VERSION}
+    stage-packages:
+      - python3-venv
+    python-packages:
+      - wheel
+      - pip
+      # Limited to < 66 because we need `pkg_resources` and because `python-apt`
+      # does not build with the latest (shouldn't this be in constraints.txt?)
+      - setuptools<66
+    python-constraints:
+      - constraints.txt
+    python-requirements:
+      - requirements.txt
+    organize:
+      # Put snapcraftctl and craftctl into its own directory that can be included in the PATH
+      # without including other binaries.
+      bin/craftctl: usr/libexec/snapcraft/craftctl
+      bin/snapcraftctl: bin/scriptlet-bin/snapcraftctl
+      # Also install the compatibility wrapper for core22+.
+      bin/snapcraftctl-compat: usr/libexec/snapcraft/snapcraftctl
+
+  build-deps:
+    plugin: nil
+    build-packages:
+      - libapt-pkg-dev
+
+  run-deps:
+    plugin: nil
+    stage-packages:
+      - binutils
+      - snapd
+    override-build: |
+      # This is where Snapcraft projects on the host should be mounted
+      mkdir -p ${CRAFT_PART_INSTALL}/project
+
+  legacy-dirs:
+    plugin: nil
+    override-build: |
+      # Snapcraft complains if these don't exist, even though it won't use them
+      # in core22+
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/snapcraft/{schema,extensions,keyrings}
+
+  # Taken from the snapcraft snap
+  patchelf:
+    plugin: autotools
+    source: https://github.com/snapcore/patchelf
+    source-type: git
+    source-branch: '0.9+snapcraft'
+    autotools-configure-parameters:
+      - --prefix=/
+    build-attributes:
+      - enable-patchelf
+    build-packages:
+      - g++
+      - git
+      - make
+    override-pull: |
+      craftctl default
+
+      if [ "${CRAFT_TARGET_ARCH}" = "riscv64" ]; then
+        git am "${CRAFT_PROJECT_DIR}/snap/local/patches/patchelf/0001-Always-use-the-ET_DYN-codepath-avoiding-shifting-loa.patch"
+        git am "${CRAFT_PROJECT_DIR}/snap/local/patches/patchelf/0002-Fix-rewriteSectionsLibrary-to-not-assume-the-base-ad.patch"
+      fi
+    override-build: |
+      craftctl default
+      make check
+    prime:
+      - bin/patchelf
+
+  chisel:
+    plugin: go
+    source: https://github.com/canonical/chisel.git
+    source-commit: bd27f8700cd7d2a6b4e0df6b10c3761c83a70485
+    build-snaps:
+      - go/1.18/stable
+    overlay-packages:
+      # Needs to be an overlay package to execute the maintainer scripts
+      - ca-certificates
+    organize:
+      bin/chisel: usr/libexec/snapcraft/chisel
+
+entrypoint-service: snapcraft
+
+services:
+  snapcraft:
+    override: replace
+    command: /bin/snapcraft [ pack ]
+    working-dir: /project
+    startup: enabled
+    on-success: shutdown
+    on-failure: shutdown
+    environment:
+      # default to destructive builds
+      SNAPCRAFT_BUILD_ENVIRONMENT: host
+      # put libexec on the path, for craftctl
+      PATH: /usr/libexec/snapcraft:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
