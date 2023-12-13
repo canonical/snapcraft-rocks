@@ -1,0 +1,21 @@
+name: Build rock
+
+on:
+  pull_request:
+    branches:
+      - 'core2[24]-[78]'
+  push:
+    branches:
+      - 'core2[24]-[78]'
+
+jobs:
+  build-rock:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+    
+      - name: Build rock
+        uses: canonical/craft-actions/rockcraft-pack@main
+        with:
+          rockcraft-channel: candidate
