@@ -19,3 +19,19 @@ jobs:
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
           rockcraft-channel: candidate
+
+      - name: Get rock name
+        id: vars
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]
+          then
+            echo "rockname=pr-${{ github.event.number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "rockname=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload rock
+        uses: actions/upload-artifact@v3
+        with:
+          name: snapcraft-${{ steps.vars.outputs.rockname }}.rock
+          path: '*.rock'
