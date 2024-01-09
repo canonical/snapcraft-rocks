@@ -1,0 +1,17 @@
+name: hello-world
+version: "1.0"
+summary: test
+description: hello-world
+grade: devel
+confinement: strict
+base: SNAPCRAFT_BASE
+build-base: SNAPCRAFT_BUILD_BASE
+
+parts:
+  hello-world:
+    plugin: nil
+    stage-packages: ["hello"]
+
+apps:
+  hello-world:
+    command: usr/bin/hello

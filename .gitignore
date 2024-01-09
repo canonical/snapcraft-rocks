@@ -1,2 +1,5 @@
 *.rock
+tests/spread/**/parts
+tests/spread/**/prime
+tests/spread/**/stage
 
