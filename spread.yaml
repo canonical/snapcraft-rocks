@@ -1,0 +1,90 @@
+project: snapcraft-rocks
+
+# note: the `path` is inside /root because the docker snap has issues
+# mounting directories that are outside the user's home
+path: /root/snapcraft-rocks
+environment:
+  PROJECT_PATH: /root/snapcraft-rocks
+  SNAPD_TESTING_TOOLS: $PROJECT_PATH/tools/external/snapd-testing-tools/tools
+  PATH: /snap/bin:$PATH:$SNAPD_TESTING_TOOLS:$PROJECT_PATH/tools/spread
+  # These variables are used to set the base in multi-base projects
+  SNAPCRAFT_BASE: core22
+  SNAPCRAFT_BUILD_BASE: core22
+
+include:
+    - tests/
+    - tools/
+
+backends:
+  google:
+    key: '$(HOST: echo "$SPREAD_GOOGLE_KEY")'
+    location: snapd-spread/us-east1-b
+    halt-timeout: 2h
+    systems:
+      - ubuntu-20.04-64:
+          workers: 1
+          storage: 40G
+      - ubuntu-22.04-64:
+          workers: 1
+          storage: 40G
+      - fedora-39-64:
+          workers: 1
+          storage: 40G
+
+prepare: |
+  # if the 'tools' directory inside the submodule does not exist, then assume the submodule is empty
+  if [[ ! -d "$SNAPD_TESTING_TOOLS" ]]; then
+    echo "Cannot run spread because submodule 'snapd-testing-tools' is empty. Fetch with 'git submodule update --init' and rerun spread."
+    exit 1
+  fi
+
+  if os.query is-ubuntu; then
+    tempfile="$(mktemp)"
+    if ! apt-get update > "$tempfile" 2>&1; then
+        cat "$tempfile"
+        exit 1
+    fi
+  fi
+
+  tests.pkgs install snapd
+
+  snap wait system seed.loaded
+
+  # The /snap directory does not exist in some environments
+  [ ! -d /snap ] && ln -s /var/lib/snapd/snap /snap
+
+  # Hold snap refreshes.
+  snap refresh --hold
+
+  if ! snap watch --last=auto-refresh?; then
+      journalctl -xe
+  fi
+  if ! snap watch --last=install?; then
+      journalctl -xe
+  fi
+
+  if [ "$SPREAD_SYSTEM" = "fedora-39-64" ]; then
+    # Latest docker snap needs a more recent version of snapd than Fedora ships
+    # https://github.com/canonical/rockcraft/pull/277
+    snap install docker --channel=core18/stable
+  else
+    snap install docker
+  fi  
+
+  # make sure docker is working
+  retry -n 10 --wait 2 sh -c 'docker run --rm hello-world'
+  
+  # install rockcraft just to use its bundled skopeo
+  snap install --classic --stable rockcraft
+
+  load_snapcraft_rock
+
+
+restore-each: |
+  # Cleanup after each task.
+  rm -f *.snap
+
+
+suites:
+  tests/spread/general/:
+    summary: general tests that should work on all bases and Snapcraft versions

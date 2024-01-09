@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# load_snapcraft_rock: helper to load the Snapcraft rock into docker.
+# 
+# The rock is always loaded as "snapcraft-rock", regardless of supported base. 
+
+if stat ${PROJECT_PATH}/tests/*.rock 2>/dev/null; then
+  rockname=$(ls ${PROJECT_PATH}/tests/*.rock)
+  /snap/rockcraft/current/bin/skopeo --insecure-policy copy oci-archive:${rockname} docker-daemon:snapcraft-rock:latest
+else
+  echo "Expected a rock to exist in ${PROJECT_PATH}/tests/"
+  exit 1
+fi
