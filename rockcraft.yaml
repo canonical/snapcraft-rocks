@@ -59,6 +59,10 @@ parts:
       # in core22+
       mkdir -p ${CRAFT_PART_INSTALL}/usr/share/snapcraft/{schema,extensions,keyrings}
 
+  startup-script:
+    plugin: dump
+    source: src
+
   # Taken from the snapcraft snap
   patchelf:
     plugin: autotools
@@ -103,7 +107,7 @@ entrypoint-service: snapcraft
 services:
   snapcraft:
     override: replace
-    command: /bin/snapcraft [ pack ]
+    command: /bin/run-snapcraft.sh [ pack ]
     working-dir: /project
     startup: enabled
     on-success: shutdown
