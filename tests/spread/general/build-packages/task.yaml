@@ -1,5 +1,0 @@
-summary: build a project with build-packages
-
-execute: |
-  # pack the snap
-  run_snapcraft pack
