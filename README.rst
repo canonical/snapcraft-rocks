@@ -29,6 +29,8 @@ Requirements
 
 - `Rockcraft`_ is needed to generate the rocks (minimum version ``1.1.0``).
 - `Docker`_ or some other engine is needed to create containers from the images.
+  **Note**: Docker can sometimes make ``iptables`` changes that break LXD
+  instances used by Rockcraft. See `this page`_ for details.
 
 Instructions
 ------------
@@ -54,7 +56,8 @@ Instructions
     docker run --rm -it -v `pwd`:/project snapcraft-core22:latest pack
 
 - Other commands, like ``clean`` or ``build``, can be called simply by replacing
-  ``pack`` in the example above.
+  ``pack`` in the example above. Everything argument provided after the image
+  name is forwarded to Snapcraft.
 
 
 .. _rocks: https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/#rocks-explanation
@@ -63,3 +66,4 @@ Instructions
 .. _Docker: https://www.docker.com/
 .. _Skopeo: https://github.com/containers/skopeo
 .. _instructions: https://canonical-rockcraft.readthedocs-hosted.com/en/latest/tutorials/hello-world/#run-the-rock-in-docker
+.. _this page: https://canonical-craft-providers.readthedocs-hosted.com/en/latest/explanation/#failure-to-properly-execute-commands-that-depend-on-network-access
