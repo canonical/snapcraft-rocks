@@ -58,5 +58,7 @@ jobs:
           name: snapcraft-rock
           path: tests
 
-      - name: Run spread
-        run: spread
+      # NOTE: Actually running spread is disabled until we have runners that
+      # support the tool.
+      # - name: Run spread
+      #   run: spread
