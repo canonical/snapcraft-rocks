@@ -31,7 +31,9 @@ jobs:
           fi
 
       - name: Upload rock
-        uses: actions/upload-artifact@v4
+        # NOTE: using v3 (for this and other actions) due to node versions
+        # on self-hosted runners (no node20)
+        uses: actions/upload-artifact@v3
         with:
           name: snapcraft-rock
           path: '*.rock'
@@ -47,18 +49,16 @@ jobs:
           mkdir "${{ github.workspace }}"
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           submodules: true
 
       - name: Download rock artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: snapcraft-rock
           path: tests
 
-      # NOTE: Actually running spread is disabled until we have runners that
-      # support the tool.
-      # - name: Run spread
-      #   run: spread
+      - name: Run spread
+        run: spread
