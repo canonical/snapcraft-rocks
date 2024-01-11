@@ -1,0 +1,4 @@
+summary: build a snap using package-repositories
+
+execute: |
+  run_snapcraft pack
