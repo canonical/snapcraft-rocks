@@ -1,0 +1,13 @@
+name: build-packages
+version: "1.0"
+summary: test
+description: Check that build-packages work
+grade: devel
+confinement: strict
+base: SNAPCRAFT_BASE
+build-base: SNAPCRAFT_BUILD_BASE
+
+parts:
+  hello-world:
+    plugin: nil
+    build-packages: ["hello"]
