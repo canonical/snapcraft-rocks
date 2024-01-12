@@ -1,0 +1,10 @@
+summary: build snaps exercising various features via spread variants
+
+environment:
+  FEATURE/build_packages: build-packages
+  FEATURE/package_repositories: package-repositories
+  FEATURE/patchelf: patchelf
+
+execute: |
+  cd $FEATURE
+  run_snapcraft pack

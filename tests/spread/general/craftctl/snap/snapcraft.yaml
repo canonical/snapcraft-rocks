@@ -1,0 +1,24 @@
+name: craftctl
+version: "1.0"
+summary: test
+description: craftctl
+grade: devel
+confinement: strict
+adopt-info: hello
+base: SNAPCRAFT_BASE
+build-base: SNAPCRAFT_BUILD_BASE
+
+parts:
+  hello:
+    plugin: nil
+    override-pull: |
+      echo -e "#!/usr/bin/env bash\necho hello" > hello.sh
+      chmod +x hello.sh
+      craftctl get grade | grep devel
+      craftctl set version="22"
+      craftctl set grade=stable
+    override-build: |
+      craftctl get version | grep 22
+      craftctl get grade | grep stable
+      echo "This is the build step"
+      cp hello.sh "$CRAFT_PART_INSTALL"/

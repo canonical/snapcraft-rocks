@@ -1,0 +1,43 @@
+name: patchelf
+version: "1.0"
+summary: test
+description: patchelf
+grade: devel
+confinement: strict
+base: SNAPCRAFT_BASE
+build-base: SNAPCRAFT_BUILD_BASE
+
+parts:
+  hello:
+    source: .
+    plugin: make
+    build-packages:
+      - gcc
+      - libc6-dev
+      - libcurl4-openssl-dev
+  hello-existing-rpath:
+    source: .
+    plugin: make
+    build-packages:
+      - gcc
+      - libc6-dev
+      - libcurl4-openssl-dev
+      - patchelf
+    build-attributes:
+      - enable-patchelf
+    override-build: |
+      snapcraftctl build
+      mv $CRAFT_PART_INSTALL/bin/hello-strict $CRAFT_PART_INSTALL/bin/hello-strict-existing-rpath
+      patchelf --force-rpath --set-rpath "\$ORIGIN/../fake-lib" $CRAFT_PART_INSTALL/bin/hello-strict-existing-rpath
+  hello-enable-patchelf:
+    source: .
+    plugin: make
+    build-packages:
+      - gcc
+      - libc6-dev
+      - libcurl4-openssl-dev
+    build-attributes:
+      - enable-patchelf
+    override-build: |
+      snapcraftctl build
+      mv $CRAFT_PART_INSTALL/bin/hello-strict $CRAFT_PART_INSTALL/bin/hello-strict-enable-patchelf
