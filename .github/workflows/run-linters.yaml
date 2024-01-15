@@ -1,0 +1,27 @@
+name: Run linters
+
+on:
+  pull_request:
+    branches:
+      - 'core2[24]-[78]'
+  push:
+    branches:
+      - 'core2[24]-[78]'
+
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo snap install shellcheck
+      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Run ShellCheck
+        run: |
+          ./tools/external/snapd-testing-tools/utils/spread-shellcheck tests/spread/ spread.yaml
