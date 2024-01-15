@@ -12,8 +12,8 @@ environment:
   SNAPCRAFT_BUILD_BASE: core22
 
 include:
-    - tests/
-    - tools/
+  - tests/
+  - tools/
 
 backends:
   google:
@@ -69,11 +69,11 @@ prepare: |
     snap install docker --channel=core18/stable
   else
     snap install docker
-  fi  
+  fi
 
   # make sure docker is working
   retry -n 10 --wait 2 sh -c 'docker run --rm hello-world'
-  
+
   # install rockcraft just to use its bundled skopeo
   snap install --classic --stable rockcraft
 

@@ -15,7 +15,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo snap install shellcheck
-      
+          pip install -U yamllint
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -25,3 +26,7 @@ jobs:
       - name: Run ShellCheck
         run: |
           ./tools/external/snapd-testing-tools/utils/spread-shellcheck tests/spread/ spread.yaml
+
+      - name: Run yamllint
+        run: |
+          yamllint --strict .
