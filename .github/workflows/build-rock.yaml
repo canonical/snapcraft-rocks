@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-    
+
       - name: Build rock
         uses: canonical/craft-actions/rockcraft-pack@main
         with:

@@ -117,4 +117,3 @@ services:
       SNAPCRAFT_BUILD_ENVIRONMENT: host
       # put libexec on the path, for craftctl
       PATH: /usr/libexec/snapcraft:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-
