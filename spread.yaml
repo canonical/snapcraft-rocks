@@ -82,7 +82,7 @@ prepare: |
 
 restore-each: |
   # Cleanup after each task.
-  rm -f *.snap
+  rm -f ./*.snap
 
 
 suites:
