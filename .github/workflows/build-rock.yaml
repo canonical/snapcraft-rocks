@@ -17,8 +17,6 @@ jobs:
 
       - name: Build rock
         uses: canonical/craft-actions/rockcraft-pack@main
-        with:
-          rockcraft-channel: candidate
 
       - name: Get rock name
         id: vars
