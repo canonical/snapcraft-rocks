@@ -88,3 +88,5 @@ restore-each: |
 suites:
   tests/spread/general/:
     summary: general tests that should work on all bases and Snapcraft versions
+  tests/spread/snapcraft-8/:
+    summary: tests that check Snapcraft 8.* behavior

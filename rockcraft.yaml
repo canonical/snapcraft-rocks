@@ -90,6 +90,18 @@ parts:
     prime:
       - bin/patchelf
 
+  chisel:
+    plugin: nil
+    stage-snaps:
+      - chisel/latest/candidate
+    overlay-packages:
+      # Needs to be an overlay package to execute the maintainer scripts
+      - ca-certificates
+    organize:
+      bin/chisel: usr/libexec/snapcraft/chisel
+    stage:
+      - usr/libexec/snapcraft/chisel
+
 entrypoint-service: snapcraft
 
 services:
