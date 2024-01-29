@@ -1,8 +1,0 @@
-summary: build a snap with chisel slices
-
-execute: |
-  # Note: the Chisel support in Snapcraft is currently broken due to a change
-  # in chisel-releases' schema. So until a new release of Snapcraft with an
-  # updated version of Chisel comes out the best we can do here is make sure
-  # that the build is failing for the right reason.
-  run_snapcraft pack | MATCH "cannot parse release definition"

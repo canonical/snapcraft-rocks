@@ -90,18 +90,6 @@ parts:
     prime:
       - bin/patchelf
 
-  chisel:
-    plugin: go
-    source: https://github.com/canonical/chisel.git
-    source-commit: bd27f8700cd7d2a6b4e0df6b10c3761c83a70485
-    build-snaps:
-      - go/1.18/stable
-    overlay-packages:
-      # Needs to be an overlay package to execute the maintainer scripts
-      - ca-certificates
-    organize:
-      bin/chisel: usr/libexec/snapcraft/chisel
-
 entrypoint-service: snapcraft
 
 services:
