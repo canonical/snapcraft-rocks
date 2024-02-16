@@ -2,5 +2,23 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "labels": ["dependencies"],
+  "baseBranches": ["/core\\d\\d-\\d/"],
+  "regexManagers": [
+    {
+      "fileMatch": ["rockcraft.yaml"],
+      "matchStrings": [
+        "version: (?<currentValue>.*)"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "canonical/snapcraft"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
   ]
 }
