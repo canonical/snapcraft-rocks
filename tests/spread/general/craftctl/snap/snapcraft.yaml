@@ -14,11 +14,11 @@ parts:
     override-pull: |
       echo -e "#!/usr/bin/env bash\necho hello" > hello.sh
       chmod +x hello.sh
-      craftctl get grade | grep devel
+      # we only set the 'version' and not the 'grade' here because projects
+      # with 'devel' build-base can only have 'devel' grade. We can update
+      # this when core24 is stable.
       craftctl set version="22"
-      craftctl set grade=stable
     override-build: |
       craftctl get version | grep 22
-      craftctl get grade | grep stable
       echo "This is the build step"
       cp hello.sh "$CRAFT_PART_INSTALL"/

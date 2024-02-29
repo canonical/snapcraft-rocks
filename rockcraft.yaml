@@ -1,13 +1,14 @@
-name: snapcraft-core22
-base: ubuntu@22.04
+name: snapcraft-core24
+base: ubuntu@24.04
+build-base: devel
 version: 8.0.4
-summary: easily create core22 snaps
+summary: easily create core24 snaps
 description: |
   Snapcraft aims to make upstream developers' lives easier and as such is not
   a single toolset, but instead is a collection of tools that enable the
   natural workflow of an upstream to be extended with a simple release step
   into Snappy.
-  This version of Snapcraft is able to build core22 snaps in destructive mode
+  This version of Snapcraft is able to build core24 snaps in destructive mode
   only.
 license: GPL-3.0
 platforms:
@@ -23,9 +24,6 @@ parts:
     python-packages:
       - wheel
       - pip
-      # Limited to < 66 because we need `pkg_resources` and because `python-apt`
-      # does not build with the latest (shouldn't this be in constraints.txt?)
-      - setuptools<66
     python-constraints:
       - constraints.txt
     python-requirements:
