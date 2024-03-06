@@ -8,8 +8,8 @@ environment:
   SNAPD_TESTING_TOOLS: $PROJECT_PATH/tools/external/snapd-testing-tools/tools
   PATH: /snap/bin:$PATH:$SNAPD_TESTING_TOOLS:$PROJECT_PATH/tools/spread
   # These variables are used to set the base in multi-base projects
-  SNAPCRAFT_BASE: core22
-  SNAPCRAFT_BUILD_BASE: core22
+  SNAPCRAFT_BASE: core24
+  SNAPCRAFT_BUILD_BASE: devel
 
 include:
   - tests/
@@ -78,6 +78,9 @@ prepare: |
   snap install --classic --stable rockcraft
 
   load_snapcraft_rock
+
+  # while core24 is unstable we need to install it explicitly
+  snap install --edge core24
 
 
 restore-each: |
