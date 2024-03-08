@@ -22,6 +22,10 @@ These are the currently supported combinations of Snapcraft versions and cores:
 
 - Branch ``core22-7``, for rocks with latest Snapcraft 7 to build ``core22``
   snaps.
+- Branch ``core22-8``, for rocks with latest Snapcraft 8 to build ``core22``
+  snaps.
+- Branch ``core24-8``, for rocks with latest Snapcraft 8 to build ``core24``
+  snaps.
 
 
 Requirements
@@ -56,8 +60,8 @@ Instructions
     docker run --rm -it -v `pwd`:/project snapcraft-core22:latest pack
 
 - Other commands, like ``clean`` or ``build``, can be called simply by replacing
-  ``pack`` in the example above. Everything argument provided after the image
-  name is forwarded to Snapcraft.
+  ``pack`` in the example above. Every argument provided after the image name is
+  forwarded to Snapcraft.
 
 
 .. _rocks: https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/#rocks-explanation
