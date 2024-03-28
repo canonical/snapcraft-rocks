@@ -23,3 +23,9 @@ parts:
   part-2:
     source: .
     plugin: python
+    stage-packages:
+      # TODO: we can remove this once Snapcraft is released with #4666
+      - libpython3.12-minimal
+      - libpython3.12-stdlib
+      - python3.12-minimal
+      - python3.12-venv
