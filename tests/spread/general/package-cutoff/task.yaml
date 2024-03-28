@@ -1,0 +1,9 @@
+summary: Test package cutoff due to base snap
+
+
+execute: |
+  # pack the snap
+  run_snapcraft pack
+
+  # Make sure the packed snap does *not* have a bundled libc6
+  unsquashfs -l package-cutoff_1.0_amd64.snap | NOMATCH libc\.so

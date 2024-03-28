@@ -50,6 +50,25 @@ parts:
       # This is where Snapcraft projects on the host should be mounted
       mkdir -p ${CRAFT_PART_INSTALL}/project
 
+  base-snap:
+    plugin: nil
+    stage-snaps:
+      - core22 # Update all instances of this to the desired target base
+    override-build: |
+      # usrmerge symlinks exist in the base snap, so create the ones we need here
+      # because 'organize' does not like directory symlinks
+      mkdir -p ${CRAFT_PART_INSTALL}/snap/core22/current
+      ln -s usr/lib ${CRAFT_PART_INSTALL}/snap/core22/current/lib
+      ln -s usr/lib64 ${CRAFT_PART_INSTALL}/snap/core22/current/lib64
+    organize:
+      # This is used by craft-parts to determine the cutoff for stage-packages
+      usr/share/snappy/dpkg.list: snap/core22/current/usr/share/snappy/dpkg.list
+      # These are for patchelf fixing and library linting
+      usr/lib/${CRAFT_ARCH_TRIPLET}: snap/core22/current/usr/lib/${CRAFT_ARCH_TRIPLET}
+      usr/lib64: snap/core22/current/usr/lib64
+    stage:
+      - snap/core22/current/*
+
   legacy-dirs:
     plugin: nil
     override-build: |
