@@ -36,27 +36,56 @@ jobs:
           name: snapcraft-rock
           path: '*.rock'
 
-  spread-tests:
-    runs-on: self-hosted
+  # spread-tests:
+  #   runs-on: self-hosted
+  #   needs: [build-rock]
+
+  #   steps:
+  #     - name: Cleanup job workspace
+  #       run: |
+  #         rm -rf "${{ github.workspace }}"
+  #         mkdir "${{ github.workspace }}"
+
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+  #         submodules: true
+
+  #     - name: Download rock artifact
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: snapcraft-rock
+  #         path: tests
+
+  #     - name: Run spread
+  #       run: spread
+
+  publish-rock:
+    runs-on: ubuntu-22.04
     needs: [build-rock]
-
+    #if: github.event_name == 'push'
+    permissions:
+      packages: write
     steps:
-      - name: Cleanup job workspace
-        run: |
-          rm -rf "${{ github.workspace }}"
-          mkdir "${{ github.workspace }}"
-
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          submodules: true
-
       - name: Download rock artifact
         uses: actions/download-artifact@v3
         with:
           name: snapcraft-rock
-          path: tests
 
-      - name: Run spread
-        run: spread
+      - name: Install rockcraft
+        run: sudo snap install --classic rockcraft
+
+      - name: Publish rock to gcr
+        run: |
+          ls *.rock
+          echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
+          # should be GITHUB_REF_NAME
+          array_ref=(${GITHUB_BASE_REF//-/ })
+          snapcraft_core=${array_ref[0]}
+          snapcraft_version=${array_ref[1]}
+
+          source_rock="oci-archive://$(ls snapcraft*.rock)"
+          target_image="docker://ghcr.io/canonical/snapcraft:${snapcraft_version}_${snapcraft_core}"
+
+          /snap/rockcraft/current/bin/skopeo --insecure-policy copy ${source_rock} ${target_image} --dest-creds "${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}"
