@@ -1,9 +1,48 @@
 Snapcraft rocks
 ===============
 
-This repository contains sources to generate `Snapcraft`_ `rocks`_. You can use
-these sources to create OCI-compliant container images that run specific
+This repository contains `Snapcraft`_ `rocks`_ and the sources to generate
+them. The rocks are OCI-compliant container images that run different
 versions of Snapcraft to create snaps.
+
+Each rock in this repository bundles a specific version of Snapcraft, targeting
+snaps for a specific core. The currently supported versions and cores have the
+following tags:
+
+- ``7_core22``, bundling the latest Snapcraft 7 capable of building ``core22``
+  snaps.
+- ``8_core22``, bundling the latest Snapcraft 8 capable of building ``core22``
+  snaps.
+- ``8_core24``, bundling the latest Snapcraft 8 capable of building ``core24``
+  snaps.
+
+
+Usage
+-----
+
+The contained Snapcraft needs access to the directory containing the project
+that you want to snap (the directory containing the ``snap`` folder with a
+``snapcraft.yaml`` file), and this directory needs to be exposed to the
+running container as ``/project``. For example, the following command will
+mount the current directory into a new container and run ``pack`` on the
+latest version of Snapcraft 7 for core22 snaps::
+
+  docker run -it -v `pwd`:/project ghcr.io/canonical/snapcraft:7_core22 pack
+
+Other commands, like ``clean`` or ``build``, can be called simply by replacing
+``pack`` in the example above. Every argument provided after the image name is
+forwarded to Snapcraft.
+
+
+Reporting bugs
+--------------
+
+Please report all issues, improvements and feature requests at
+https://github.com/canonical/snapcraft-rocks.
+
+
+Development
+-----------
 
 The sources in this repository are capable of building different versions of
 Snapcraft, targeting snaps for different cores. The sources are separated
@@ -16,7 +55,7 @@ a rock containing the latest stable version of Snapcraft 7 and can be used
 to create snaps targetting ``core22``.
 
 Supported versions
-------------------
+~~~~~~~~~~~~~~~~~~
 
 These are the currently supported combinations of Snapcraft versions and cores:
 
@@ -29,7 +68,7 @@ These are the currently supported combinations of Snapcraft versions and cores:
 
 
 Requirements
-------------
+~~~~~~~~~~~~
 
 - `Rockcraft`_ is needed to generate the rocks (minimum version ``1.1.0``).
 - `Docker`_ or some other engine is needed to create containers from the images.
@@ -37,7 +76,7 @@ Requirements
   instances used by Rockcraft. See `this page`_ for details.
 
 Instructions
-------------
+~~~~~~~~~~~~
 
 - First, choose a target Snapcraft version and core and checkout the appropriate
   branch. As an example, let's use branch ``core22-7``.
@@ -49,20 +88,8 @@ Instructions
 - Use a tool like `Skopeo`_ to convert and load the rock into Docker's local
   registry. You can use the ``skopeo`` binary included in Rockcraft's snap for
   this (see the `instructions`_ on Rockcraft's docs).
-- Finally, use Docker to create containers to run Snapcraft. An important note
-  here is that Snapcraft needs access to the directory containing the project
-  that you want to snap (the directory containing the ``snap`` folder with a
-  ``snapcraft.yaml`` file), and this directory needs to be exposed to the
-  running container as ``/project``. For example, if the image was loaded into
-  Docker as ``snapcraft-core22:latest``, the following command will mount the
-  current directory into a new container and run ``snapcraft pack`` inside it::
-
-    docker run --rm -it -v `pwd`:/project snapcraft-core22:latest pack
-
-- Other commands, like ``clean`` or ``build``, can be called simply by replacing
-  ``pack`` in the example above. Every argument provided after the image name is
-  forwarded to Snapcraft.
-
+- Finally, use Docker to create containers to run Snapcraft as described in the
+  `Usage`_ section above.
 
 .. _rocks: https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/#rocks-explanation
 .. _Snapcraft: https://www.snapcraft.io
