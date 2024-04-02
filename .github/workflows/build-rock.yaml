@@ -1,4 +1,4 @@
-name: Build and test rock
+name: Build, test and publish rock
 
 on:
   pull_request:
@@ -60,3 +60,33 @@ jobs:
 
       - name: Run spread
         run: spread
+
+  publish-rock:
+    runs-on: ubuntu-22.04
+    needs: [build-rock]
+    # Not on pull requests; only when they're merged
+    if: github.event_name == 'push'
+    permissions:
+      packages: write
+    steps:
+      - name: Download rock artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: snapcraft-rock
+
+      - name: Install rockcraft
+        run: sudo snap install --classic rockcraft
+
+      - name: Publish rock to Github Container Registry
+        run: |
+          # Split the base branch name ("core22-7") into core ("core22") and version ("7")
+          array_ref=(${GITHUB_REF_NAME//-/ })
+          snapcraft_core=${array_ref[0]}
+          snapcraft_version=${array_ref[1]}
+
+          source_rock="oci-archive:$(ls snapcraft*.rock)"
+          target_image="ghcr.io/canonical/snapcraft:${snapcraft_version}_${snapcraft_core}"
+          dest_image="docker://${target_image}"
+
+          /snap/rockcraft/current/bin/skopeo --insecure-policy copy ${source_rock} ${dest_image} --dest-creds "${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}"
+          echo "Image is available at ${target_image}"
