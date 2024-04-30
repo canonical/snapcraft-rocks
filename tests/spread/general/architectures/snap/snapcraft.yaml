@@ -7,10 +7,12 @@ confinement: strict
 base: SNAPCRAFT_BASE
 build-base: SNAPCRAFT_BUILD_BASE
 
-architectures:
-  - build-on: amd64
+platforms:
+  amd64:
+    build-on: amd64
     build-for: amd64
-  - build-on: [amd64, arm64]
+  arm64:
+    build-on: [amd64, arm64]
     build-for: arm64
 
 parts:
