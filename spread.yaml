@@ -9,7 +9,7 @@ environment:
   PATH: /snap/bin:$PATH:$SNAPD_TESTING_TOOLS:$PROJECT_PATH/tools/spread
   # These variables are used to set the base in multi-base projects
   SNAPCRAFT_BASE: core24
-  SNAPCRAFT_BUILD_BASE: devel
+  SNAPCRAFT_BUILD_BASE: core24
 
 include:
   - tests/

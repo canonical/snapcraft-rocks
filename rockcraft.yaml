@@ -1,6 +1,5 @@
 name: snapcraft-core24
 base: ubuntu@24.04
-build-base: devel
 version: 8.2.2
 summary: easily create core24 snaps
 description: |
