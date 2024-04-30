@@ -5,4 +5,5 @@
 # replace the SNAPCRAFT_* tokens with the correct values for our Snapcraft image
 sed --in-place='' "s/SNAPCRAFT_BASE/$SNAPCRAFT_BASE/" snap/snapcraft.yaml
 sed --in-place='' "s/SNAPCRAFT_BUILD_BASE/$SNAPCRAFT_BUILD_BASE/" snap/snapcraft.yaml
-docker run --rm -v `pwd`:/project snapcraft-rock:latest "$@"
+# in ubuntu@24.04 rocks pebble is not verbose by default
+docker run --rm -v `pwd`:/project --entrypoint="/usr/bin/pebble" snapcraft-rock:latest enter --verbose --args snapcraft "$@"
