@@ -45,6 +45,7 @@ parts:
     stage-packages:
       - binutils
       - snapd
+      - gpg-agent # for key handling in package-repositories
     override-build: |
       # This is where Snapcraft projects on the host should be mounted
       mkdir -p ${CRAFT_PART_INSTALL}/project
