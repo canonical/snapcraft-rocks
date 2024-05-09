@@ -1,7 +1,6 @@
 name: snapcraft-core24
 base: ubuntu@24.04
-build-base: devel
-version: 8.0.5
+version: 8.2.2
 summary: easily create core24 snaps
 description: |
   Snapcraft aims to make upstream developers' lives easier and as such is not
@@ -46,6 +45,7 @@ parts:
     stage-packages:
       - binutils
       - snapd
+      - gpg-agent # for key handling in package-repositories
     override-build: |
       # This is where Snapcraft projects on the host should be mounted
       mkdir -p ${CRAFT_PART_INSTALL}/project
