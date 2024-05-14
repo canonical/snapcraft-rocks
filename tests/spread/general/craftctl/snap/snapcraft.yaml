@@ -11,14 +11,21 @@ build-base: SNAPCRAFT_BUILD_BASE
 parts:
   hello:
     plugin: nil
+    build-packages:
+      # Note: We add this package explicitly here to make sure that the
+      # declaration of Python build packages does not clobber the existing
+      # Python installation (with Snapcraft libraries).
+      - python3-venv
     override-pull: |
       echo -e "#!/usr/bin/env bash\necho hello" > hello.sh
       chmod +x hello.sh
       craftctl get grade | grep devel
       craftctl set version="22"
       craftctl set grade=stable
+      craftctl default
     override-build: |
       craftctl get version | grep 22
       craftctl get grade | grep stable
+      craftctl default
       echo "This is the build step"
       cp hello.sh "$CRAFT_PART_INSTALL"/
