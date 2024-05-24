@@ -1,6 +1,6 @@
 name: snapcraft-core24
 base: ubuntu@24.04
-version: 8.2.7
+version: 8.2.8
 summary: easily create core24 snaps
 description: |
   Snapcraft aims to make upstream developers' lives easier and as such is not
