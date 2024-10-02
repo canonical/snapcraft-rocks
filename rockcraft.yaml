@@ -12,6 +12,7 @@ description: |
 license: GPL-3.0
 platforms:
   amd64: #TODO
+  arm64:
 
 parts:
   snapcraft:

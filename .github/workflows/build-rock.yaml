@@ -10,7 +10,12 @@ on:
 
 jobs:
   build-rock:
-    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        os:
+          - ubuntu-22.04
+          - labels: [ubuntu-22.04-2core]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
