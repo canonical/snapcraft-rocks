@@ -1,6 +1,6 @@
 name: snapcraft-core22
 base: ubuntu@22.04
-version: 7.5.5
+version: 7.5.8
 summary: easily create core22 snaps
 description: |
   Snapcraft aims to make upstream developers' lives easier and as such is not
