@@ -5,7 +5,6 @@ description: architectures
 grade: devel
 confinement: strict
 base: SNAPCRAFT_BASE
-build-base: SNAPCRAFT_BUILD_BASE
 
 platforms:
   amd64:
