@@ -10,6 +10,8 @@ description: |
   It solves the problems of dependency management and architecture support by bundling all of a software’s libraries into the container itself, and provides a way to package any app, program, toolkit, or library for all major Linux distributions and IoT devices.
 
   Snapcraft is for developers, package maintainers, fleet administrators, and hobbyists who are interested in publishing snaps for Linux and IoT devices.
+
+  This rock is intended for building snaps using the core24 base with Snapcraft 8.
 license: GPL-3.0
 platforms:
   amd64: #TODO
