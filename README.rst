@@ -1,8 +1,7 @@
 Snapcraft rocks
 ===============
 
-This repository contains `Snapcraft`_ `rocks`_ and the sources to generate
-them. The rocks are OCI-compliant container images that run different
+`Snapcraft`_ `rocks`_ are OCI-compliant container images with different
 versions of Snapcraft to create snaps.
 
 Each rock in this repository bundles a specific version of Snapcraft, targeting
@@ -16,6 +15,16 @@ following tags:
 - ``8_core24``, bundling the latest Snapcraft 8 capable of building ``core24``
   snaps.
 
+This repository contains sources for generating images.
+
+* `core22-7 <https://github.com/canonical/snapcraft-rocks/tree/core22-7>`_
+* `core22-8 <https://github.com/canonical/snapcraft-rocks/tree/core22-8>`_
+* `core24-7 <https://github.com/canonical/snapcraft-rocks/tree/core24-8>`_
+
+And repository of built container images.
+
+* https://github.com/canonical/snapcraft-rocks/pkgs/container/snapcraft
+
 
 Usage
 -----
@@ -25,13 +34,17 @@ that you want to snap (the directory containing the ``snap`` folder with a
 ``snapcraft.yaml`` file), and this directory needs to be exposed to the
 running container as ``/project``. For example, the following command will
 mount the current directory into a new container and run ``pack`` on the
-latest version of Snapcraft 7 for core22 snaps::
+latest version of Snapcraft 8 for core24 snaps::
 
-  docker run -it -v `pwd`:/project ghcr.io/canonical/snapcraft:7_core22 pack
+  docker run -it -v `pwd`:/project ghcr.io/canonical/snapcraft:8_core24 pack
 
 Other commands, like ``clean`` or ``build``, can be called simply by replacing
 ``pack`` in the example above. Every argument provided after the image name is
 forwarded to Snapcraft.
+
+To see `snapcraft` output, add flags::
+
+  docker run -it -v `pwd`:/project ghcr.io/canonical/snapcraft:8_core24 \; -v
 
 
 Reporting bugs
