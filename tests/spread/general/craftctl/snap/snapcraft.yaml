@@ -6,7 +6,6 @@ grade: devel
 confinement: strict
 adopt-info: hello
 base: SNAPCRAFT_BASE
-build-base: SNAPCRAFT_BUILD_BASE
 
 parts:
   hello:

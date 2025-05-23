@@ -29,9 +29,7 @@ jobs:
           fi
 
       - name: Upload rock
-        # NOTE: using v3 (for this and other actions) due to node versions
-        # on self-hosted runners (no node20)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: snapcraft-rock
           path: '*.rock'
@@ -47,13 +45,13 @@ jobs:
           mkdir "${{ github.workspace }}"
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
 
       - name: Download rock artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: snapcraft-rock
           path: tests
@@ -70,7 +68,7 @@ jobs:
       packages: write
     steps:
       - name: Download rock artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: snapcraft-rock
 
