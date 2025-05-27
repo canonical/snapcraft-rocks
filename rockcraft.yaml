@@ -129,6 +129,10 @@ parts:
       - bin/patchelf
 
   chisel:
+    # This must be after the 'snapcraft' part. Otherwise, `usr/lib/python3.12/sitecustomize.py`
+    # created by the Python plugin from the 'snapcraft' part never gets staged.
+    after:
+      - snapcraft
     plugin: nil
     stage-snaps:
       - chisel/latest/candidate
