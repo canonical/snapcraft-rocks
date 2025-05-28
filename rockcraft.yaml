@@ -36,6 +36,10 @@ parts:
       # installing them (as a build-package in a snapcraft.yaml) would clobber
       # the sitecustomize.py added by rockcraft.
       - python3-venv
+    overlay:
+      # Remove the sitecustomize added by python3-venv's dependencies, because
+      # we want to use the one provided by the python plugin.
+      - -usr/lib/python3.12/sitecustomize.py
     build-snaps:
       - astral-uv
     override-build: |
@@ -129,10 +133,6 @@ parts:
       - bin/patchelf
 
   chisel:
-    # This must be after the 'snapcraft' part. Otherwise, `usr/lib/python3.12/sitecustomize.py`
-    # created by the Python plugin from the 'snapcraft' part never gets staged.
-    after:
-      - snapcraft
     plugin: nil
     stage-snaps:
       - chisel/latest/candidate
