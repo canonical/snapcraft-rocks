@@ -18,20 +18,26 @@ platforms:
 
 parts:
   snapcraft:
-    # We can't use the uv plugin because it rewrites shebangs in scripts from the python3-venv package.
-    # For example, the uv plugin changes the shebang in `/usr/bin/dpkg-maintscript-helper` from dpkg
-    #  from `#! /bin/sh` to `#! /bin/python3`. This causes Snapcraft to fail when installing build packages.
+    # The uv plugin can't be used until https://github.com/canonical/rockcraft/issues/889 is resolved.
     plugin: python
     source: https://github.com/snapcore/snapcraft.git
     source-tag: ${CRAFT_PROJECT_VERSION}
     python-requirements:
       - uv-requirements.txt
       - requirements-noble.txt
-    python-packages:
-      - wheel
-      - pip
     stage-packages:
       - python3-venv
+    overlay-packages:
+      # Note: this declaration seems redundant but it's here to ensure that the
+      # Apt installation inside the rock is aware that these Python packages
+      # (python3-venv and its dependencies) are already installed. Otherwise,
+      # installing them (as a build-package in a snapcraft.yaml) would clobber
+      # the sitecustomize.py added by rockcraft.
+      - python3-venv
+    overlay:
+      # Remove the sitecustomize added by python3-venv's dependencies, because
+      # we want to use the one provided by the python plugin.
+      - -usr/lib/python3.12/sitecustomize.py
     build-snaps:
       - astral-uv
     override-build: |
@@ -44,6 +50,13 @@ parts:
       bin/snapcraftctl: bin/scriptlet-bin/snapcraftctl
       # Also install the compatibility wrapper for core22+.
       bin/snapcraftctl-compat: usr/libexec/snapcraft/snapcraftctl
+    stage:
+      # Explicitly filter out the pip installed in Snapcraft's virtual environment,
+      # because it can conflict with the Python installation in the rock and
+      # the virtual environments created by the 'python' plugin when executing
+      # Snapcraft.
+      - -bin/pip*
+      - -lib/python3.*/site-packages/pip*
 
   build-deps:
     plugin: nil
