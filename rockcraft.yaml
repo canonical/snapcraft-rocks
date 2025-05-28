@@ -18,9 +18,7 @@ platforms:
 
 parts:
   snapcraft:
-    # We can't use the uv plugin because it rewrites shebangs in scripts from the python3-venv package.
-    # For example, the uv plugin changes the shebang in `/usr/bin/dpkg-maintscript-helper` from dpkg
-    #  from `#! /bin/sh` to `#! /bin/python3`. This causes Snapcraft to fail when installing build packages.
+    # The uv plugin can't be used until https://github.com/canonical/rockcraft/issues/889 is resolved.
     plugin: python
     source: https://github.com/snapcore/snapcraft.git
     source-tag: ${CRAFT_PROJECT_VERSION}
