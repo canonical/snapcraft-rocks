@@ -1,40 +1,60 @@
 name: snapcraft-core22
 base: ubuntu@22.04
-version: 8.2.10
-summary: easily create core22 snaps
+version: 8.9.2
+summary: Package, distribute, and update any app for Linux and IoT.
 description: |
-  Snapcraft aims to make upstream developers' lives easier and as such is not
-  a single toolset, but instead is a collection of tools that enable the
-  natural workflow of an upstream to be extended with a simple release step
-  into Snappy.
-  This version of Snapcraft is able to build core22 snaps in destructive mode
-  only.
+  Snapcraft is the command-line build tool for packaging and distributing software and apps in the snap container format.
+
+  The tool packages apps across many supported languages, build tools, and frameworks, such as Python, C and C++, Rust, Node, and GNOME. Snaps can be tested, debugged, and locally shared before being published to the global Snap Store and private stores. It uses simple commands to manage and monitor releases at a granular level.
+
+  It solves the problems of dependency management and architecture support by bundling all of a software’s libraries into the container itself, and provides a way to package any app, program, toolkit, or library for all major Linux distributions and IoT devices.
+
+  Snapcraft is for developers, package maintainers, fleet administrators, and hobbyists who are interested in publishing snaps for Linux and IoT devices.
+
+  This rock is intended for building snaps using the core22 base with Snapcraft 8 in destructive mode.
 license: GPL-3.0
 platforms:
   amd64: #TODO
 
+package-repositories:
+  - type: apt
+    ppa: deadsnakes/ppa
+    priority: always
+
 parts:
   snapcraft:
+    # The uv plugin can't be used because Snapcraft calls apt, which will fail.
+    # See https://github.com/canonical/rockcraft/issues/889
     plugin: python
     source: https://github.com/snapcore/snapcraft.git
     source-tag: ${CRAFT_PROJECT_VERSION}
+    build-snaps:
+      - astral-uv
+    build-environment:
+      - PARTS_PYTHON_INTERPRETER: python3.12
     stage-packages:
-      - python3-venv
+      - python3.12-venv
     overlay-packages:
       # Note: this declaration seems redundant but it's here to ensure that the
       # Apt installation inside the rock is aware that these Python packages
       # (python3-venv and its dependencies) are already installed. Otherwise,
       # installing them (as a build-package in a snapcraft.yaml) would clobber
       # the sitecustomize.py added by rockcraft.
-      - python3-venv
-    python-packages:
-      # Limited to < 66 because we need `pkg_resources` and because `python-apt`
-      # does not build with the latest (shouldn't this be in constraints.txt?)
-      - setuptools<66
-    python-constraints:
-      - constraints.txt
+      - python3.12-venv
+    overlay:
+      # Remove the sitecustomize added by python3-venv's dependencies, because
+      # we want to use the one provided by the python plugin.
+      - -usr/lib/python3.12/sitecustomize.py
     python-requirements:
-      - requirements.txt
+      - uv-requirements.txt
+      - requirements-jammy.txt
+    override-pull: |
+      craftctl default
+      echo "python-apt @ https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/python-apt/2.4.0ubuntu4/python-apt_2.4.0ubuntu4.tar.xz \
+      --hash=sha256:4ab9c915d1295afbf2ca197993454d3659bb8dee4e9cd39ceba9efe5970873cc" > requirements-jammy.txt
+    override-build: |
+      uv export --no-dev --no-emit-workspace --output-file uv-requirements.txt
+      craftctl default
     organize:
       # Put snapcraftctl and craftctl into its own directory that can be included in the PATH
       # without including other binaries.
@@ -54,6 +74,7 @@ parts:
     plugin: nil
     build-packages:
       - libapt-pkg-dev
+      - python3.12-dev
 
   run-deps:
     plugin: nil
@@ -134,6 +155,9 @@ parts:
       - usr/libexec/snapcraft/chisel
 
 entrypoint-service: snapcraft
+
+environment:
+  PEBBLE_VERBOSE: 1
 
 services:
   snapcraft:

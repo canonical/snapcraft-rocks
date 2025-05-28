@@ -5,7 +5,6 @@ description: patchelf
 grade: devel
 confinement: classic
 base: SNAPCRAFT_BASE
-build-base: SNAPCRAFT_BUILD_BASE
 
 parts:
   hello:
