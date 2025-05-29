@@ -144,6 +144,9 @@ parts:
 
 entrypoint-service: snapcraft
 
+environment:
+  PEBBLE_VERBOSE: 1
+
 services:
   snapcraft:
     override: replace
