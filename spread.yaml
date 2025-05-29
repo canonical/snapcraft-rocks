@@ -67,6 +67,9 @@ prepare: |
     # Latest docker snap needs a more recent version of snapd than Fedora ships
     # https://github.com/canonical/rockcraft/pull/277
     snap install docker --channel=core18/stable
+  elif [[ "$SPREAD_SYSTEM" =~ ubuntu-22.04 ]]; then
+    # https://github.com/canonical/docker-snap/issues/281
+    apt install -y docker.io
   else
     snap install docker
   fi
@@ -78,9 +81,6 @@ prepare: |
   snap install --classic --stable rockcraft
 
   load_snapcraft_rock
-
-  # while core24 is unstable we need to install it explicitly
-  snap install --edge core24
 
 
 restore-each: |
