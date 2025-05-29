@@ -83,6 +83,7 @@ prepare: |
 restore-each: |
   # Cleanup after each task.
   rm -f ./*.snap
+  rm -rf ./parts ./stage ./prime
 
 
 suites:
