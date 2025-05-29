@@ -79,9 +79,6 @@ prepare: |
 
   load_snapcraft_rock
 
-  # while core24 is unstable we need to install it explicitly
-  snap install --edge core24
-
 
 restore-each: |
   # Cleanup after each task.
