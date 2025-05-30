@@ -14,7 +14,8 @@ description: |
   This rock is intended for building snaps using the core22 base with Snapcraft 8 in destructive mode.
 license: GPL-3.0
 platforms:
-  amd64: #TODO
+  amd64:
+  arm64:
 
 package-repositories:
   - type: apt
