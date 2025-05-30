@@ -6,7 +6,7 @@
 
 if stat ${PROJECT_PATH}/tests/*.rock 2>/dev/null; then
   rockname=$(ls ${PROJECT_PATH}/tests/*.rock)
-  /snap/rockcraft/current/bin/skopeo --insecure-policy copy oci-archive:${rockname} docker-daemon:snapcraft-rock:latest
+  rockcraft.skopeo --insecure-policy copy oci-archive:${rockname} docker-daemon:snapcraft-rock:latest
 else
   echo "Expected a rock to exist in ${PROJECT_PATH}/tests/"
   exit 1
