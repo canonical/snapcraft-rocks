@@ -5,7 +5,6 @@ description: Check that build-packages work
 grade: devel
 confinement: strict
 base: SNAPCRAFT_BASE
-build-base: SNAPCRAFT_BUILD_BASE
 
 parts:
   hello-world:
