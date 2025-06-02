@@ -2,7 +2,6 @@
 # (tests/spread/core24/snap-creation/package-cutoff)
 name: package-cutoff
 base: SNAPCRAFT_BASE
-build-base: SNAPCRAFT_BUILD_BASE
 version: '1.0'
 summary: 'test'
 description: test
