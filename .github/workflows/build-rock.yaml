@@ -74,7 +74,7 @@ jobs:
       - name: Download rock artifact
         uses: actions/download-artifact@v4
         with:
-          pattern: snapcraft-amd64.rock
+          name: snapcraft-amd64.rock
       - name: Install rockcraft
         run: sudo snap install --classic rockcraft
       - name: Publish rock to Github Container Registry
