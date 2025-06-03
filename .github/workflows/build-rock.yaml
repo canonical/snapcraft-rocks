@@ -10,7 +10,11 @@ on:
 
 jobs:
   build-rock:
-    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        runner: [self-hosted]
+        arch: [amd64, arm64]
+    runs-on: ["${{ matrix.runner }}", "${{ matrix.arch }}"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,7 +35,7 @@ jobs:
       - name: Upload rock
         uses: actions/upload-artifact@v4
         with:
-          name: snapcraft-rock
+          name: snapcraft-${{ matrix.arch }}-rock
           path: '*.rock'
 
   spread-tests:
@@ -53,14 +57,14 @@ jobs:
       - name: Download rock artifact
         uses: actions/download-artifact@v4
         with:
-          name: snapcraft-rock
+          name: snapcraft-amd64-rock
           path: tests
 
       - name: Run spread
         run: spread
 
   publish-rock:
-    runs-on: ubuntu-22.04
+    runs-on: [self-hosted]
     needs: [build-rock]
     # Not on pull requests; only when they're merged
     if: github.event_name == 'push'
@@ -70,11 +74,9 @@ jobs:
       - name: Download rock artifact
         uses: actions/download-artifact@v4
         with:
-          name: snapcraft-rock
-
+          name: snapcraft-amd64.rock
       - name: Install rockcraft
         run: sudo snap install --classic rockcraft
-
       - name: Publish rock to Github Container Registry
         run: |
           # Split the base branch name ("core22-7") into core ("core22") and version ("7")
@@ -86,5 +88,5 @@ jobs:
           target_image="ghcr.io/canonical/snapcraft:${snapcraft_version}_${snapcraft_core}"
           dest_image="docker://${target_image}"
 
-          /snap/rockcraft/current/bin/skopeo --insecure-policy copy ${source_rock} ${dest_image} --dest-creds "${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}"
+          rockcraft.skopeo --insecure-policy copy ${source_rock} ${dest_image} --dest-creds "${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}"
           echo "Image is available at ${target_image}"
