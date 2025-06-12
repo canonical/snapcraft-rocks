@@ -1,6 +1,6 @@
 name: snapcraft-core22
 base: ubuntu@22.04
-version: 8.2.10
+version: 8.9.4
 summary: easily create core22 snaps
 description: |
   Snapcraft is the command-line build tool for packaging and distributing software and apps in the snap container format.
