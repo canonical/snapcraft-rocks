@@ -64,7 +64,7 @@ jobs:
         run: spread
 
   publish-rock:
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, amd64]
     needs: [build-rock]
     # Not on pull requests; only when they're merged
     if: github.event_name == 'push'
