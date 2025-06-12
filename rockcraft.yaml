@@ -1,7 +1,7 @@
 name: snapcraft-core22
 base: ubuntu@22.04
-version: 8.2.10
-summary: easily create core22 snaps
+version: 8.9.4
+summary: Package, distribute, and update any app for Linux and IoT.
 description: |
   Snapcraft is the command-line build tool for packaging and distributing software and apps in the snap container format.
 
@@ -19,21 +19,33 @@ platforms:
 
 parts:
   snapcraft:
+    # The uv plugin can't be used until https://github.com/canonical/rockcraft/issues/889 is resolved.
     plugin: python
     source: https://github.com/snapcore/snapcraft.git
     source-tag: ${CRAFT_PROJECT_VERSION}
+    python-requirements:
+      - uv-requirements.txt
+      - requirements-jammy.txt
     stage-packages:
       - python3-venv
-    python-packages:
-      - wheel
-      - pip
-      # Limited to < 66 because we need `pkg_resources` and because `python-apt`
-      # does not build with the latest (shouldn't this be in constraints.txt?)
-      - setuptools<66
-    python-constraints:
-      - constraints.txt
-    python-requirements:
-      - requirements.txt
+    overlay-packages:
+      # Note: this declaration seems redundant but it's here to ensure that the
+      # Apt installation inside the rock is aware that these Python packages
+      # (python3-venv and its dependencies) are already installed. Otherwise,
+      # installing them (as a build-package in a snapcraft.yaml) would clobber
+      # the sitecustomize.py added by rockcraft.
+      - python3-venv
+    overlay:
+      # Remove the sitecustomize added by python3-venv's dependencies, because
+      # we want to use the one provided by the python plugin.
+      - -usr/lib/python3.12/sitecustomize.py
+    build-snaps:
+      - astral-uv
+    override-build: |
+      uv export --no-dev --no-emit-workspace --output-file uv-requirements.txt
+      echo "python-apt @ https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/python-apt/2.4.0ubuntu4/python-apt_2.4.0ubuntu4.tar.xz \
+      --hash=sha256:4ab9c915d1295afbf2ca197993454d3659bb8dee4e9cd39ceba9efe5970873cc" > requirements-jammy.txt
+      craftctl default
     organize:
       # Put snapcraftctl and craftctl into its own directory that can be included in the PATH
       # without including other binaries.
@@ -41,6 +53,13 @@ parts:
       bin/snapcraftctl: bin/scriptlet-bin/snapcraftctl
       # Also install the compatibility wrapper for core22+.
       bin/snapcraftctl-compat: usr/libexec/snapcraft/snapcraftctl
+    stage:
+      # Explicitly filter out the pip installed in Snapcraft's virtual environment,
+      # because it can conflict with the Python installation in the rock and
+      # the virtual environments created by the 'python' plugin when executing
+      # Snapcraft.
+      - -bin/pip*
+      - -lib/python3.*/site-packages/pip*
 
   build-deps:
     plugin: nil
@@ -52,6 +71,7 @@ parts:
     stage-packages:
       - binutils
       - snapd
+      - gpg-agent # for key handling in package-repositories
     override-build: |
       # This is where Snapcraft projects on the host should be mounted
       mkdir -p ${CRAFT_PART_INSTALL}/project
@@ -59,7 +79,7 @@ parts:
   base-snap:
     plugin: nil
     stage-snaps:
-      - core22 # Update all instances of this to the desired target base
+      - core22
     override-build: |
       # usrmerge symlinks exist in the base snap, so create the ones we need here
       # because 'organize' does not like directory symlinks
