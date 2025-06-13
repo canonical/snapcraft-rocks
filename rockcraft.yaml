@@ -22,7 +22,8 @@ parts:
     # The uv plugin can't be used until https://github.com/canonical/rockcraft/issues/889 is resolved.
     plugin: python
     source: https://github.com/snapcore/snapcraft.git
-    source-tag: ${CRAFT_PROJECT_VERSION}
+    # source-tag: ${CRAFT_PROJECT_VERSION}
+    source-commit: b8b20f47100aa2c8900f76ed8062e830a98c0e93  # Switch back to the tag when we release 8.9.5
     python-requirements:
       - uv-requirements.txt
       - requirements-jammy.txt
