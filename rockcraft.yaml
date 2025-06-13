@@ -38,7 +38,7 @@ parts:
     overlay:
       # Remove the sitecustomize added by python3-venv's dependencies, because
       # we want to use the one provided by the python plugin.
-      - -usr/lib/python3.12/sitecustomize.py
+      - -usr/lib/python3.10/sitecustomize.py
     build-snaps:
       - astral-uv
     override-build: |
