@@ -3,11 +3,18 @@
   "extends": [
     "config:recommended"
   ],
-  "labels": ["dependencies"],
-  "baseBranches": ["/^core\\d\\d-\\d/"],
-  "regexManagers": [
+  "labels": [
+    "dependencies"
+  ],
+  "baseBranches": [
+    "/^core\\d\\d-\\d/"
+  ],
+  "customManagers": [
     {
-      "fileMatch": ["rockcraft.yaml"],
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/rockcraft.yaml/"
+      ],
       "matchStrings": [
         "version: (?<currentValue>.*)"
       ],
@@ -17,7 +24,9 @@
   ],
   "packageRules": [
     {
-      "matchUpdateTypes": ["major"],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "enabled": false
     }
   ]
