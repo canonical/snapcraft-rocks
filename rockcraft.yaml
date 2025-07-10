@@ -1,6 +1,6 @@
 name: snapcraft-core22
 base: ubuntu@22.04
-version: 8.9.4
+version: 8.10.1
 summary: Package, distribute, and update any app for Linux and IoT.
 description: |
   Snapcraft is the command-line build tool for packaging and distributing software and apps in the snap container format.
@@ -22,8 +22,7 @@ parts:
     # The uv plugin can't be used until https://github.com/canonical/rockcraft/issues/889 is resolved.
     plugin: python
     source: https://github.com/snapcore/snapcraft.git
-    # source-tag: ${CRAFT_PROJECT_VERSION}
-    source-commit: b8b20f47100aa2c8900f76ed8062e830a98c0e93  # Switch back to the tag when we release 8.9.5
+    source-tag: ${CRAFT_PROJECT_VERSION}
     python-requirements:
       - uv-requirements.txt
       - requirements-jammy.txt
