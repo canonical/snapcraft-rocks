@@ -6,7 +6,7 @@
   "labels": [
     "dependencies"
   ],
-  "baseBranches": [
+  "baseBranchPatterns": [
     "/^core\\d\\d-\\d/"
   ],
   "customManagers": [
