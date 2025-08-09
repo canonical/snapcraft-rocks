@@ -1,6 +1,6 @@
 name: snapcraft-core24
 base: ubuntu@24.04
-version: 8.9.5
+version: 8.11.0
 summary: Package, distribute, and update any app for Linux and IoT.
 description: |
   Snapcraft is the command-line build tool for packaging and distributing software and apps in the snap container format.
