@@ -19,7 +19,7 @@ This repository contains sources for generating images.
 
 * `core22-7 <https://github.com/canonical/snapcraft-rocks/tree/core22-7>`_
 * `core22-8 <https://github.com/canonical/snapcraft-rocks/tree/core22-8>`_
-* `core24-7 <https://github.com/canonical/snapcraft-rocks/tree/core24-8>`_
+* `core24-8 <https://github.com/canonical/snapcraft-rocks/tree/core24-8>`_
 
 And repository of built container images.
 
