@@ -18,8 +18,8 @@ platforms:
   arm64:
 
 parts:
-  # pygit2 >=1.18 requires libgit2 >=1.5 to build from source.
-  # Ubuntu 24.04 only ships 1.5.x, so we build the required version ourselves.
+  # pygit2 1.18 requires exactly libgit2 1.9.x to compile.
+  # Ubuntu 24.04 ships 1.7.2, so we build the required version ourselves.
   libgit2:
     source: https://github.com/libgit2/libgit2/archive/refs/tags/v1.9.1.tar.gz
     source-checksum: sha256/14cab3014b2b7ad75970ff4548e83615f74d719afe00aa479b4a889c1e13fc00
