@@ -1,0 +1,165 @@
+name: snapcraft-core26
+base: ubuntu@26.04
+version: 9.0.1
+summary: Package, distribute, and update any app for Linux and IoT.
+description: |
+  Snapcraft is the command-line build tool for packaging and distributing software and apps in the snap container format.
+
+  The tool packages apps across many supported languages, build tools, and frameworks, such as Python, C and C++, Rust, Node, and GNOME. Snaps can be tested, debugged, and locally shared before being published to the global Snap Store and private stores. It uses simple commands to manage and monitor releases at a granular level.
+
+  It solves the problems of dependency management and architecture support by bundling all of a software’s libraries into the container itself, and provides a way to package any app, program, toolkit, or library for all major Linux distributions and IoT devices.
+
+  Snapcraft is for developers, package maintainers, fleet administrators, and hobbyists who are interested in publishing snaps for Linux and IoT devices.
+
+  This rock is intended for building snaps using the core26 base with Snapcraft 9 in destructive mode.
+license: GPL-3.0
+platforms:
+  amd64:
+  arm64:
+
+parts:
+  snapcraft:
+    # The uv plugin can't be used until https://github.com/canonical/rockcraft/issues/889 is resolved.
+    plugin: python
+    source: https://github.com/snapcore/snapcraft.git
+    source-tag: ${CRAFT_PROJECT_VERSION}
+    python-requirements:
+      - uv-requirements.txt
+    build-snaps:
+      - astral-uv
+    after:
+      - build-deps
+      - libgit2
+      - python3-apt
+    build-environment:
+      # Build pygit2 against the libgit2 staged by this project rather than the
+      # base image, which may provide an incompatible version.
+      - CPATH: ${CRAFT_STAGE}/usr/include
+      - LIBRARY_PATH: ${CRAFT_STAGE}/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}:${CRAFT_STAGE}/usr/lib64:${CRAFT_STAGE}/usr/lib
+      - LD_LIBRARY_PATH: ${CRAFT_STAGE}/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}:${CRAFT_STAGE}/usr/lib64:${CRAFT_STAGE}/usr/lib
+      - PKG_CONFIG_PATH: ${CRAFT_STAGE}/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}/pkgconfig:${CRAFT_STAGE}/usr/lib/pkgconfig
+    override-build: |
+      uv export --no-dev --no-emit-workspace --no-hashes --output-file uv-requirements.txt
+      craftctl default
+    organize:
+      # Put snapcraftctl and craftctl into its own directory that can be included in the PATH
+      # without including other binaries.
+      bin/craftctl: usr/libexec/snapcraft/craftctl
+      bin/snapcraftctl: bin/scriptlet-bin/snapcraftctl
+      # Also install the compatibility wrapper for core22+.
+      bin/snapcraftctl-compat: usr/libexec/snapcraft/snapcraftctl
+    stage:
+      # Explicitly filter out the pip installed in Snapcraft's virtual environment,
+      # because it can conflict with the Python installation in the rock and
+      # the virtual environments created by the 'python' plugin when executing
+      # Snapcraft.
+      - -bin/pip*
+      - -lib/python3.*/site-packages/pip*
+
+  libgit2:
+    source: https://github.com/libgit2/libgit2/archive/refs/tags/v1.9.1.tar.gz
+    source-checksum: sha256/14cab3014b2b7ad75970ff4548e83615f74d719afe00aa479b4a889c1e13fc00
+    plugin: cmake
+    cmake-parameters:
+      - -DCMAKE_INSTALL_PREFIX=/usr
+      - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - -DBUILD_TESTS=OFF
+    build-attributes:
+      - enable-patchelf
+    build-packages:
+      - cmake
+      - gcc
+      - pkg-config
+      - libssl-dev
+    stage:
+      - -bin
+    prime:
+      - -usr/include
+
+  python3-apt:
+    plugin: nil
+    build-attributes:
+      - enable-patchelf
+    stage-packages:
+      - python3-apt
+    organize:
+      # Follow the upstream Snapcraft snap layout so the module is available in
+      # Snapcraft's Python environment.
+      "usr/lib/python3/dist-packages/*": "usr/lib/python3.14/site-packages/"
+    stage:
+      # Drop the usrmerge convenience symlink to avoid conflicts with other parts.
+      - -lib
+
+  build-deps:
+    plugin: nil
+    build-packages:
+      - libapt-pkg-dev
+
+  run-deps:
+    plugin: nil
+    stage-packages:
+      - binutils
+      - python3-venv
+      - gpg-agent # for key handling in package-repositories
+    override-build: |
+      # This is where Snapcraft projects on the host should be mounted
+      mkdir -p ${CRAFT_PART_INSTALL}/project
+
+  legacy-dirs:
+    plugin: nil
+    override-build: |
+      # Snapcraft complains if these don't exist, even though it won't use them
+      # in core22+
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/snapcraft/{schema,extensions,keyrings}
+
+  startup-script:
+    plugin: dump
+    source: src
+    organize:
+      run-snapcraft.sh: usr/bin/run-snapcraft.sh
+
+  # Taken from the upstream Snapcraft snap recipe.
+  patchelf:
+    plugin: autotools
+    source: https://github.com/snapcore/patchelf
+    source-type: git
+    source-branch: '0.9+snapcraft'
+    autotools-configure-parameters:
+      - --prefix=/
+    build-attributes:
+      - enable-patchelf
+    build-packages:
+      - g++
+      - git
+      - make
+    override-pull: |
+      craftctl default
+
+      if [ "${CRAFT_ARCH_BUILD_FOR}" = "riscv64" ]; then
+        git am "${CRAFT_PROJECT_DIR}/snap/local/patches/patchelf/0001-Always-use-the-ET_DYN-codepath-avoiding-shifting-loa.patch"
+        git am "${CRAFT_PROJECT_DIR}/snap/local/patches/patchelf/0002-Fix-rewriteSectionsLibrary-to-not-assume-the-base-ad.patch"
+      fi
+    override-build: |
+      craftctl default
+      make check
+    prime:
+      - bin/patchelf
+
+entrypoint-service: snapcraft
+
+environment:
+  PEBBLE_VERBOSE: 1
+
+services:
+  snapcraft:
+    override: replace
+    command: /usr/bin/run-snapcraft.sh [ pack ]
+    working-dir: /project
+    startup: enabled
+    on-success: shutdown
+    on-failure: shutdown
+    environment:
+      # default to destructive builds
+      SNAPCRAFT_BUILD_ENVIRONMENT: host
+      # put libexec on the path, for craftctl
+      PATH: /usr/libexec/snapcraft:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

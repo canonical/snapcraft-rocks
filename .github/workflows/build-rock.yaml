@@ -3,14 +3,14 @@ name: Build rock
 on:
   pull_request:
     branches:
-      - 'core2[24]-[78]'
+      - 'core2[246]-[789]'
   push:
     branches:
-      - 'core2[24]-[78]'
+      - 'core2[246]-[789]'
 
 jobs:
   build-rock:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
