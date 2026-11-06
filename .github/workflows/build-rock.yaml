@@ -10,6 +10,7 @@ on:
 
 jobs:
   build-rock:
+    name: build-rock (${{ matrix.arch }})
     strategy:
       matrix:
         include:
