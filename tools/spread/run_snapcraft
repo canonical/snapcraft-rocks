@@ -5,4 +5,14 @@
 # replace the SNAPCRAFT_* tokens with the correct values for our Snapcraft image
 sed --in-place='' "s/SNAPCRAFT_BASE/$SNAPCRAFT_BASE/" snap/snapcraft.yaml
 sed --in-place='' "s/SNAPCRAFT_BUILD_BASE/$SNAPCRAFT_BUILD_BASE/" snap/snapcraft.yaml
-docker run --rm -v `pwd`:/project snapcraft-rock:latest "$@"
+
+# In proxied environments, forward the proxy configuration into the container,
+# so that snapcraft can reach the snap store and other remote services.
+docker_args=()
+for var in HTTP_PROXY http_proxy HTTPS_PROXY https_proxy NO_PROXY no_proxy; do
+  if [ -n "${!var:-}" ]; then
+    docker_args+=(--env "$var=${!var}")
+  fi
+done
+
+docker run --rm "${docker_args[@]}" -v "$PWD":/project snapcraft-rock:latest "$@"
