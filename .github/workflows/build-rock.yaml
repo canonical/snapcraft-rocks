@@ -17,21 +17,22 @@ jobs:
           - runner: ubuntu-latest
             arch: amd64
             # rockcraft 1.13.0 (amd64) - this is the latest version that works for snapcraft 8.11.1
-            rockcraft-revision: "3466"
+            revision: "3466"
           # there's no 'ubuntu-latest' alias for arm runners
           - runner: ubuntu-24.04-arm
             arch: arm64
             # rockcraft 1.13.0 (arm64) - this is the latest version that works for snapcraft 8.11.1
-            rockcraft-revision: "3467"
+            revision: "3467"
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Build rock
-        uses: canonical/craft-actions/rockcraft-pack@d2add174925f9bca7b0a826010c8e1ce2a4bbc3d # v1.0.0
+        # follows main to test our own actions
+        uses: canonical/craft-actions/rockcraft/pack@main
         with:
-          revision: ${{ matrix.rockcraft-revision }}
+          revision: ${{ matrix.revision }}
 
       - name: Get rock name
         id: vars
