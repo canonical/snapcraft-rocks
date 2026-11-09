@@ -14,11 +14,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: ubuntu-latest
+          - runner: ubuntu-24.04
             arch: amd64
             # rockcraft 1.13.0 (amd64) - this is the latest version that works for snapcraft 8.11.1
             revision: "3466"
-          # there's no 'ubuntu-latest' alias for arm runners
           - runner: ubuntu-24.04-arm
             arch: arm64
             # rockcraft 1.13.0 (arm64) - this is the latest version that works for snapcraft 8.11.1
