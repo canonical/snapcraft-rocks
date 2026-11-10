@@ -1,6 +1,6 @@
 name: snapcraft-core24
 base: ubuntu@24.04
-version: 8.11.1
+version: 8.14.5
 summary: Package, distribute, and update any app for Linux and IoT.
 description: |
   Snapcraft is the command-line build tool for packaging and distributing software and apps in the snap container format.
@@ -25,7 +25,6 @@ parts:
     source-tag: ${CRAFT_PROJECT_VERSION}
     python-requirements:
       - uv-requirements.txt
-      - requirements-noble.txt
     stage-packages:
       - python3-venv
     overlay-packages:
@@ -42,7 +41,10 @@ parts:
     build-snaps:
       - astral-uv
     override-build: |
-      uv export --no-dev --no-emit-workspace --output-file uv-requirements.txt
+      # The dev-noble group provides python-apt from a Canonical wheel index,
+      # and --emit-index-url tells pip where to find it. Hashes must be
+      # omitted because uv can't hash the wheels from that index.
+      uv export --no-dev --no-emit-workspace --no-hashes --group dev-noble --emit-index-url --output-file uv-requirements.txt
       craftctl default
     organize:
       # Put snapcraftctl and craftctl into its own directory that can be included in the PATH
