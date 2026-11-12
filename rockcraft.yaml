@@ -25,14 +25,10 @@ parts:
     source-tag: ${CRAFT_PROJECT_VERSION}
     python-requirements:
       - uv-requirements.txt
-    stage-packages:
-      - python3-venv
     overlay-packages:
-      # Note: this declaration seems redundant but it's here to ensure that the
-      # Apt installation inside the rock is aware that these Python packages
-      # (python3-venv and its dependencies) are already installed. Otherwise,
-      # installing them (as a build-package in a snapcraft.yaml) would clobber
-      # the sitecustomize.py added by rockcraft.
+      # Installs python3-venv into the overlay so the rock's apt/dpkg records
+      # it as installed. Otherwise a project installing it as a build-package
+      # would clobber the sitecustomize.py added by rockcraft.
       - python3-venv
     overlay:
       # Remove the sitecustomize added by python3-venv's dependencies, because
@@ -41,6 +37,10 @@ parts:
     build-snaps:
       - astral-uv
     override-build: |
+      # The python plugin requires a Python interpreter in the payload. Copy
+      # the one provided by the overlay, so the venv symlinks to it.
+      mkdir -p "${CRAFT_PART_INSTALL}/usr/bin"
+      cp -aL /usr/bin/python3.12 "${CRAFT_PART_INSTALL}/usr/bin/"
       # The dev-noble group provides python-apt from a Canonical wheel index,
       # and --emit-index-url tells pip where to find it. Hashes must be
       # omitted because uv can't hash the wheels from that index.
@@ -72,6 +72,9 @@ parts:
       - binutils
       - snapd
       - gpg-agent # for key handling in package-repositories
+    stage:
+      # https://github.com/canonical/rockcraft/issues/1261
+      - -etc/ssl/certs/ca-certificates.crt
     override-build: |
       # This is where Snapcraft projects on the host should be mounted
       mkdir -p ${CRAFT_PART_INSTALL}/project
