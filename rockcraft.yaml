@@ -18,9 +18,37 @@ platforms:
   arm64:
 
 parts:
+  libgit2:
+    # Ubuntu@26.04 uses Python 3.14, which lacks wheels for pygit2 1.18.
+    # We build this version of libgit2 (1.9.x), such that it's available when pygit2 is built from source.
+    source: https://github.com/libgit2/libgit2/archive/refs/tags/v1.9.1.tar.gz
+    source-checksum: sha256/14cab3014b2b7ad75970ff4548e83615f74d719afe00aa479b4a889c1e13fc00
+    plugin: cmake
+    cmake-parameters:
+      - -DCMAKE_INSTALL_PREFIX=/usr
+      # Staging libgit2 in usr/lib/<arch>/ will cause the overlay squash to fail during the prime step (craft-parts#1825).
+      # Pygit2 links against this custom directory with LDFLAGS.
+      - -DCMAKE_INSTALL_LIBDIR=/usr/lib/snapcraft/libgit2
+      - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - -DBUILD_TESTS=OFF
+    build-attributes:
+      - enable-patchelf
+      - disable-usrmerge
+    build-packages:
+      - cmake
+      - pkg-config
+      - libssl-dev
+    stage:
+      # Not needed to build pygit2
+      - -usr/lib/snapcraft/libgit2/pkgconfig
+      - -usr/lib/snapcraft/libgit2/cmake
+    prime:
+      - -usr/include
+
   snapcraft:
     # The uv plugin can't be used until https://github.com/canonical/rockcraft/issues/889 is resolved.
     plugin: python
+    after: [libgit2]
     source: https://github.com/snapcore/snapcraft.git
     source-tag: ${CRAFT_PROJECT_VERSION}
     python-requirements:
@@ -36,11 +64,18 @@ parts:
       - -usr/lib/python3.14/sitecustomize.py
     build-snaps:
       - astral-uv
+    build-packages:
+      # Headers needed to compile pygit2.
+      - python3.14-dev
+    build-environment:
+      # Point pygit2 to the custom location for libgit2.
+      - LDFLAGS: "-L/root/stage/usr/lib/snapcraft/libgit2 -Wl,-rpath,/usr/lib/snapcraft/libgit2"
     override-build: |
-      # The python plugin requires a Python interpreter in the payload. Copy
-      # the one provided by the overlay, so the venv symlinks to it.
+      # The python plugin (v2) rejects interpreters under /usr/bin, so copy
+      # the overlay-provided interpreter into the payload for the build.
       mkdir -p "${CRAFT_PART_INSTALL}/usr/bin"
-      cp -aL /usr/bin/python3.14 "${CRAFT_PART_INSTALL}/usr/bin/"
+      cp -aL /usr/bin/python3.14 "${CRAFT_PART_INSTALL}/usr/bin/python3.14"
+      ln -sf python3.14 "${CRAFT_PART_INSTALL}/usr/bin/python3"
       # The dev-resolute group provides python-apt from a Canonical wheel index,
       # and --emit-index-url tells pip where to find it. Hashes must be
       # omitted because uv can't hash the wheels from that index.
@@ -52,13 +87,6 @@ parts:
       bin/craftctl: usr/libexec/snapcraft/craftctl
       # Also install the compatibility wrapper for core22+.
       bin/snapcraftctl-compat: usr/libexec/snapcraft/snapcraftctl
-    stage:
-      # Explicitly filter out the pip installed in Snapcraft's virtual environment,
-      # because it can conflict with the Python installation in the rock and
-      # the virtual environments created by the 'python' plugin when executing
-      # Snapcraft.
-      - -bin/pip*
-      - -lib/python3.*/site-packages/pip*
 
   build-deps:
     plugin: nil
