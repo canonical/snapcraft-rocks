@@ -61,7 +61,7 @@ parts:
     overlay:
       # Remove the sitecustomize added by python3-venv's dependencies, because
       # we want to use the one provided by the python plugin.
-      - -usr/lib/python3.14/sitecustomize.py
+      - -usr/lib/python3.*/sitecustomize.py
     build-snaps:
       - astral-uv
     build-packages:
@@ -110,18 +110,15 @@ parts:
     plugin: nil
     stage-snaps:
       - core26
-    override-build: |
-      # usrmerge symlinks exist in the base snap, so create the ones we need here
-      # because 'organize' does not like directory symlinks
-      mkdir -p ${CRAFT_PART_INSTALL}/snap/core26/current
-      ln -s usr/lib ${CRAFT_PART_INSTALL}/snap/core26/current/lib
-      ln -s usr/lib64 ${CRAFT_PART_INSTALL}/snap/core26/current/lib64
     organize:
       # This is used by craft-parts to determine the cutoff for stage-packages
       var/lib/chisel/manifest.wall: snap/core26/current/var/lib/chisel/manifest.wall
       # These are for patchelf fixing and library linting
       usr/lib/${CRAFT_ARCH_TRIPLET}: snap/core26/current/usr/lib/${CRAFT_ARCH_TRIPLET}
       usr/lib64: snap/core26/current/usr/lib64
+      # The usrmerge directory symlinks in the base snap
+      lib: snap/core26/current/lib
+      lib64: snap/core26/current/lib64
     stage:
       - snap/core26/current/*
 
