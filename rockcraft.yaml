@@ -1,6 +1,6 @@
 name: snapcraft-core22
 base: ubuntu@22.04
-version: 8.11.1
+version: 8.14.5
 summary: Package, distribute, and update any app for Linux and IoT.
 description: |
   Snapcraft is the command-line build tool for packaging and distributing software and apps in the snap container format.
@@ -26,14 +26,10 @@ parts:
     python-requirements:
       - uv-requirements.txt
       - requirements-jammy.txt
-    stage-packages:
-      - python3-venv
     overlay-packages:
-      # Note: this declaration seems redundant but it's here to ensure that the
-      # Apt installation inside the rock is aware that these Python packages
-      # (python3-venv and its dependencies) are already installed. Otherwise,
-      # installing them (as a build-package in a snapcraft.yaml) would clobber
-      # the sitecustomize.py added by rockcraft.
+      # Installs python3-venv into the overlay so the rock's apt/dpkg records
+      # it as installed. Otherwise a project installing it as a build-package
+      # would clobber the sitecustomize.py added by rockcraft.
       - python3-venv
     overlay:
       # Remove the sitecustomize added by python3-venv's dependencies, because
@@ -42,6 +38,10 @@ parts:
     build-snaps:
       - astral-uv
     override-build: |
+      # The python plugin requires a Python interpreter in the payload. Copy
+      # the one provided by the overlay, so the venv symlinks to it.
+      mkdir -p "${CRAFT_PART_INSTALL}/usr/bin"
+      cp -aL /usr/bin/python3.10 "${CRAFT_PART_INSTALL}/usr/bin/"
       uv export --no-dev --no-emit-workspace --output-file uv-requirements.txt
       echo "python-apt @ https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/python-apt/2.4.0ubuntu4/python-apt_2.4.0ubuntu4.tar.xz \
       --hash=sha256:4ab9c915d1295afbf2ca197993454d3659bb8dee4e9cd39ceba9efe5970873cc" > requirements-jammy.txt
@@ -60,6 +60,10 @@ parts:
       # Snapcraft.
       - -bin/pip*
       - -lib/python3.*/site-packages/pip*
+      # Debian's python3 -m venv creates a 'lib64 -> lib' symlink at the venv
+      # root, which would override the usrmerge symlink (-> usr/lib64) provided
+      # by the base image and break the dynamic loader.
+      - -lib64
 
   build-deps:
     plugin: nil
@@ -72,6 +76,13 @@ parts:
       - binutils
       - snapd
       - gpg-agent # for key handling in package-repositories
+    stage:
+      # https://github.com/canonical/rockcraft/issues/1261
+      - -etc/ssl/certs/ca-certificates.crt
+      # The jammy libc6 deb unpacks /lib64 as a real directory, which
+      # conflicts with the usrmerge symlink provided by the base image and
+      # the overlay.
+      - -lib64
     override-build: |
       # This is where Snapcraft projects on the host should be mounted
       mkdir -p ${CRAFT_PART_INSTALL}/project
