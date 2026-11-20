@@ -60,6 +60,10 @@ parts:
       # Snapcraft.
       - -bin/pip*
       - -lib/python3.*/site-packages/pip*
+      # Debian's python3 -m venv creates a 'lib64 -> lib' symlink at the venv
+      # root, which would override the usrmerge symlink (-> usr/lib64) provided
+      # by the base image and break the dynamic loader.
+      - -lib64
 
   build-deps:
     plugin: nil
@@ -75,6 +79,10 @@ parts:
     stage:
       # https://github.com/canonical/rockcraft/issues/1261
       - -etc/ssl/certs/ca-certificates.crt
+      # The jammy libc6 deb unpacks /lib64 as a real directory, which
+      # conflicts with the usrmerge symlink provided by the base image and
+      # the overlay.
+      - -lib64
     override-build: |
       # This is where Snapcraft projects on the host should be mounted
       mkdir -p ${CRAFT_PART_INSTALL}/project
