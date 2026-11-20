@@ -8,8 +8,8 @@ environment:
   SNAPD_TESTING_TOOLS: $PROJECT_PATH/tools/external/snapd-testing-tools/tools
   PATH: /snap/bin:$PATH:$SNAPD_TESTING_TOOLS:$PROJECT_PATH/tools/spread
   # These variables are used to set the base in multi-base projects
-  SNAPCRAFT_BASE: core24
-  SNAPCRAFT_BUILD_BASE: core24
+  SNAPCRAFT_BASE: core26
+  SNAPCRAFT_BUILD_BASE: core26
 
 include:
   - tests/
@@ -34,12 +34,12 @@ backends:
       NO_PROXY: "127.0.0.1,127.0.0.53,localhost"
       NTP_SERVER: "ntp.ps7.internal"
     systems: &openstack-systems
-      - ubuntu-20.04-64:
-          image: snapd-spread/ubuntu-20.04-64
-          workers: 1
-          storage: 40G
       - ubuntu-22.04-64:
           image: snapd-spread/ubuntu-22.04-64
+          workers: 1
+          storage: 40G
+      - ubuntu-24.04-64:
+          image: snapd-spread/ubuntu-24.04-64
           workers: 1
           storage: 40G
       - fedora-44-64:

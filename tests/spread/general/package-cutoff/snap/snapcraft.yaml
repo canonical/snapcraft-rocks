@@ -22,3 +22,8 @@ parts:
   part-2:
     source: .
     plugin: python
+    # The core26 base does not ship Python, so the part must provision it,
+    # including the venv module that pip's bootstrapping needs.
+    stage-packages:
+      - python3
+      - python3.14-venv
