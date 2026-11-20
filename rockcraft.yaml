@@ -60,6 +60,8 @@ parts:
       # Snapcraft.
       - -bin/pip*
       - -lib/python3.*/site-packages/pip*
+      # The venv carries a lib64 -> lib symlink that would break the rock's /lib64.
+      - -lib64
 
   build-deps:
     plugin: nil
@@ -75,6 +77,8 @@ parts:
     stage:
       # https://github.com/canonical/rockcraft/issues/1261
       - -etc/ssl/certs/ca-certificates.crt
+      # Jammy's libc6 deb carries /lib64 as a real directory, so keep the base's usrmerge symlink instead.
+      - -lib64
     override-build: |
       # This is where Snapcraft projects on the host should be mounted
       mkdir -p ${CRAFT_PART_INSTALL}/project
