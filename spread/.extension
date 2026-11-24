@@ -104,10 +104,6 @@ allocate_ci() {
         echo "This backend is intended to be used only in CI systems."
         exit 1
     fi
-    if ! dpkg -s openssh-server >/dev/null 2>&1; then
-        sudo apt-get update
-        sudo apt-get install -y openssh-server
-    fi
     sudo sed -i 's/^\s*#\?\s*\(PermitRootLogin\|PasswordAuthentication\)\>.*/\1 yes/' /etc/ssh/sshd_config
     if [ -d /etc/ssh/sshd_config.d ]; then echo -e 'PermitRootLogin yes\nPasswordAuthentication yes' | sudo tee /etc/ssh/sshd_config.d/00-spread.conf; fi
     sudo systemctl daemon-reload
