@@ -30,7 +30,12 @@ jobs:
           channel: candidate
 
       - name: Build and test rock
+        if: matrix.arch == 'amd64'
         run: CI=1 rockcraft test
+
+      - name: Build rock
+        if: matrix.arch == 'arm64'
+        run: rockcraft pack
 
       - name: Get rock name
         id: vars
