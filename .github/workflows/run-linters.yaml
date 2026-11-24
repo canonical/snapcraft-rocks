@@ -3,10 +3,10 @@ name: Run linters
 on:
   pull_request:
     branches:
-      - 'core2[24]-[78]'
+      - 'core2[246]-[789]'
   push:
     branches:
-      - 'core2[24]-[78]'
+      - 'core2[246]-[789]'
 
 jobs:
   lint:
