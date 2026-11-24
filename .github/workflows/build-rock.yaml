@@ -27,6 +27,7 @@ jobs:
         # follows main to test our own actions
         uses: canonical/craft-actions/rockcraft/pack@main
         with:
+          channel: candidate
           test: true
 
       - name: Get rock name
