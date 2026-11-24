@@ -3,4 +3,6 @@ tests/spread/**/parts
 tests/spread/**/prime
 tests/spread/**/stage
 tests/spread/**/*.snap
+.craft-spread-*/
+.spread-reuse.*.yaml
 

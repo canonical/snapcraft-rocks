@@ -18,14 +18,15 @@ jobs:
           pip install -U yamllint
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           submodules: true
 
       - name: Run ShellCheck
         run: |
-          ./tools/external/snapd-testing-tools/utils/spread-shellcheck tests/spread/ spread.yaml
+          ./tools/external/snapd-testing-tools/utils/spread-shellcheck tests/spread/ rockcraft-test.yaml
+          shellcheck --shell=bash spread/.extension tools/spread/run_snapcraft
 
       - name: Run yamllint
         run: |
