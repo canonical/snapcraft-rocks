@@ -3,7 +3,7 @@
 extends: relaxed
 
 ignore:
-  - 'tools/external/'
+  - 'snapd-testing-tools/'
 
 rules:
   # Disable line length limit because the build scripts can

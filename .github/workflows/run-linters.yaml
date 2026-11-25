@@ -15,17 +15,25 @@ jobs:
       - name: Install dependencies
         run: |
           sudo snap install shellcheck
-          pip install -U yamllint
+          pip install -U yamllint pyyaml
 
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
+      - name: Checkout snapd-testing-tools
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: canonical/snapd-testing-tools
+          ref: 5121bfb659bb9602f7d5a8a2f354dd93662270dc
+          path: snapd-testing-tools
+
       - name: Run ShellCheck
         run: |
-          find rocks -name '*.sh' -o -name '.extension' -o -path '*/tools/spread/*' -type f |
-            xargs shellcheck --shell=bash --exclude=SC1091
+          python3 snapd-testing-tools/utils/spread-shellcheck rocks/*/tests/spread/ rocks/*/rockcraft-test.yaml
+          find rocks -type f \( -name '*.sh' -o -name '.extension' -o -path '*/tools/spread/*' \) |
+            xargs -r shellcheck --shell=bash --exclude=SC1091
 
       - name: Run yamllint
         run: |

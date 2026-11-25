@@ -20,9 +20,8 @@ The sources and tests for the rocks live in the ``rocks/`` directory:
 * `rocks/core24_9 <https://github.com/canonical/snapcraft-rocks/tree/main/rocks/core24_9>`_
 * `rocks/core26_9 <https://github.com/canonical/snapcraft-rocks/tree/main/rocks/core26_9>`_
 
-And repository of built container images.
-
-* https://github.com/canonical/snapcraft-rocks/pkgs/container/snapcraft
+The built container images are published at
+https://github.com/canonical/snapcraft-rocks/pkgs/container/snapcraft.
 
 
 Usage
@@ -80,7 +79,7 @@ These are the currently supported combinations of Snapcraft versions and cores:
 Requirements
 ~~~~~~~~~~~~
 
-- `Rockcraft <https://github.com/canonical/rockcraft>`_ is needed to generate the rocks.
+- `Rockcraft <https://github.com/canonical/rockcraft>`_ is needed to generate the rocks (minimum version ``1.21``).
 - `Docker <https://www.docker.com/>`_ or some other engine is needed to create containers from the images.
   **Note**: Docker can sometimes make ``iptables`` changes that break LXD
   instances used by Rockcraft. See `this page <https://canonical-craft-providers.readthedocs-hosted.com/en/latest/explanation/#failure-to-properly-execute-commands-that-depend-on-network-access>`_ for details.
