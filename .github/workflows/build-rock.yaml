@@ -9,8 +9,8 @@ on:
       - 'core2[246]-[789]'
 
 jobs:
-  build-rock:
-    name: build-rock (${{ matrix.arch }})
+  build-and-test-rock:
+    name: build-and-test-rock (${{ matrix.arch }})
     strategy:
       matrix:
         include:
@@ -56,7 +56,7 @@ jobs:
 
   publish-rock:
     runs-on: [self-hosted, amd64]
-    needs: [build-rock]
+    needs: [build-and-test-rock]
     # Not on pull requests; only when they're merged
     if: github.event_name == 'push'
     permissions:
