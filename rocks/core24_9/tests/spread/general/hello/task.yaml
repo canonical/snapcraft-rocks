@@ -1,0 +1,9 @@
+summary: build & run a basic "hello world" snap
+
+execute: |
+  # pack the snap
+  run_snapcraft pack
+
+  # install & run it
+  snap install --dangerous hello-world_1.0_amd64.snap
+  hello-world -g "hello-from-snap" | MATCH "hello-from-snap"

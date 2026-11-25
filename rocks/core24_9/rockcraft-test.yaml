@@ -1,0 +1,45 @@
+backends:
+  craft:
+    type: craft
+    systems:
+      - ubuntu-26.04:
+
+suites:
+  tests/spread/general/:
+    summary: general tests
+    environment:
+      SNAPCRAFT_BASE: core24
+      SNAPCRAFT_BUILD_BASE: core24
+      PATH: /snap/bin:$PATH:$PROJECT_PATH/tools/spread
+
+prepare: |
+  if ! command -v snap >/dev/null; then
+    apt-get update && apt-get install -y snapd
+  fi
+  snap wait system seed.loaded
+  snap refresh --hold
+  snap watch --last=auto-refresh? || journalctl -xe
+  snap watch --last=install? || journalctl -xe
+
+  if ! command -v docker >/dev/null; then
+    snap install docker
+  fi
+
+  # 'retry' waits for the docker daemon to come online.
+  apt-get update && apt-get install -y retry
+  retry --times=10 --delay 2 -- docker run --rm hello-world
+
+  # Install rockcraft for its bundled skopeo.
+  snap install rockcraft --classic
+
+  # Load the rock under test into docker.
+  rockcraft.skopeo --insecure-policy copy "oci-archive:$CRAFT_ARTIFACT" docker-daemon:snapcraft-rock:latest
+
+restore-each: |
+  rm -f ./*.snap
+  rm -rf ./parts ./stage ./prime
+
+exclude:
+  - .git
+
+kill-timeout: 1h

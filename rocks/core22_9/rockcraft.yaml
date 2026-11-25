@@ -1,0 +1,171 @@
+name: snapcraft-core22
+base: ubuntu@22.04
+version: 9.2.1
+summary: Package, distribute, and update any app for Linux and IoT.
+description: |
+  Snapcraft is the command-line build tool for packaging and distributing software and apps in the snap container format.
+
+  The tool packages apps across many supported languages, build tools, and frameworks, such as Python, C and C++, Rust, Node, and GNOME. Snaps can be tested, debugged, and locally shared before being published to the global Snap Store and private stores. It uses simple commands to manage and monitor releases at a granular level.
+
+  It solves the problems of dependency management and architecture support by bundling all of a software’s libraries into the container itself, and provides a way to package any app, program, toolkit, or library for all major Linux distributions and IoT devices.
+
+  Snapcraft is for developers, package maintainers, fleet administrators, and hobbyists who are interested in publishing snaps for Linux and IoT devices.
+
+  This rock is intended for building snaps using the core22 base with Snapcraft 9 in destructive mode.
+license: GPL-3.0
+platforms:
+  amd64:
+  arm64:
+
+parts:
+  snapcraft:
+    # The uv plugin can't be used until https://github.com/canonical/rockcraft/issues/889 is resolved.
+    plugin: python
+    source: https://github.com/snapcore/snapcraft.git
+    source-tag: ${CRAFT_PROJECT_VERSION}
+    python-requirements:
+      - uv-requirements.txt
+      - requirements-jammy.txt
+    overlay-packages:
+      # Installs python3-venv into the overlay so the rock's apt/dpkg records
+      # it as installed. Otherwise a project installing it as a build-package
+      # would clobber the sitecustomize.py added by rockcraft.
+      - python3-venv
+    overlay:
+      # Remove the sitecustomize added by python3-venv's dependencies, because
+      # we want to use the one provided by the python plugin.
+      - -usr/lib/python3.10/sitecustomize.py
+    build-snaps:
+      - astral-uv
+    override-build: |
+      # The python plugin requires a Python interpreter in the payload. Copy
+      # the one provided by the overlay, so the venv symlinks to it.
+      mkdir -p "${CRAFT_PART_INSTALL}/usr/bin"
+      cp -aL /usr/bin/python3.10 "${CRAFT_PART_INSTALL}/usr/bin/"
+      uv export --no-dev --no-emit-workspace --output-file uv-requirements.txt
+      echo "python-apt @ https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/python-apt/2.4.0ubuntu4/python-apt_2.4.0ubuntu4.tar.xz \
+      --hash=sha256:4ab9c915d1295afbf2ca197993454d3659bb8dee4e9cd39ceba9efe5970873cc" > requirements-jammy.txt
+      craftctl default
+    organize:
+      # Put snapcraftctl and craftctl into its own directory that can be included in the PATH
+      # without including other binaries.
+      bin/craftctl: usr/libexec/snapcraft/craftctl
+      # Also install the compatibility wrapper for core22+.
+      bin/snapcraftctl-compat: usr/libexec/snapcraft/snapcraftctl
+    stage:
+      # Explicitly filter out the pip installed in Snapcraft's virtual environment,
+      # because it can conflict with the Python installation in the rock and
+      # the virtual environments created by the 'python' plugin when executing
+      # Snapcraft.
+      - -bin/pip*
+      - -lib/python3.*/site-packages/pip*
+      # The venv carries a lib64 -> lib symlink that would break the rock's /lib64.
+      - -lib64
+
+  build-deps:
+    plugin: nil
+    build-packages:
+      - libapt-pkg-dev
+
+  run-deps:
+    plugin: nil
+    stage-packages:
+      - binutils
+      - snapd
+      - gpg-agent # for key handling in package-repositories
+    stage:
+      # https://github.com/canonical/rockcraft/issues/1261
+      - -etc/ssl/certs/ca-certificates.crt
+      # Jammy's libc6 deb carries /lib64 as a real directory, so keep the base's usrmerge symlink instead.
+      - -lib64
+    override-build: |
+      # This is where Snapcraft projects on the host should be mounted
+      mkdir -p ${CRAFT_PART_INSTALL}/project
+
+  base-snap:
+    plugin: nil
+    stage-snaps:
+      - core22
+    override-build: |
+      # usrmerge symlinks exist in the base snap, so create the ones we need here
+      # because 'organize' does not like directory symlinks
+      mkdir -p ${CRAFT_PART_INSTALL}/snap/core22/current
+      ln -s usr/lib ${CRAFT_PART_INSTALL}/snap/core22/current/lib
+      ln -s usr/lib64 ${CRAFT_PART_INSTALL}/snap/core22/current/lib64
+    organize:
+      # This is used by craft-parts to determine the cutoff for stage-packages
+      usr/share/snappy/dpkg.list: snap/core22/current/usr/share/snappy/dpkg.list
+      # These are for patchelf fixing and library linting
+      usr/lib/${CRAFT_ARCH_TRIPLET}: snap/core22/current/usr/lib/${CRAFT_ARCH_TRIPLET}
+      usr/lib64: snap/core22/current/usr/lib64
+    stage:
+      - snap/core22/current/*
+
+  legacy-dirs:
+    plugin: nil
+    override-build: |
+      # Snapcraft complains if these don't exist, even though it won't use them
+      # in core22+
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/snapcraft/{schema,extensions,keyrings}
+
+  startup-script:
+    plugin: dump
+    source: src
+
+  # Taken from the snapcraft snap
+  patchelf:
+    plugin: autotools
+    source: https://github.com/snapcore/patchelf
+    source-type: git
+    source-branch: '0.9+snapcraft'
+    autotools-configure-parameters:
+      - --prefix=/
+    build-attributes:
+      - enable-patchelf
+    build-packages:
+      - g++
+      - git
+      - make
+    override-pull: |
+      craftctl default
+
+      if [ "${CRAFT_TARGET_ARCH}" = "riscv64" ]; then
+        git am "${CRAFT_PROJECT_DIR}/snap/local/patches/patchelf/0001-Always-use-the-ET_DYN-codepath-avoiding-shifting-loa.patch"
+        git am "${CRAFT_PROJECT_DIR}/snap/local/patches/patchelf/0002-Fix-rewriteSectionsLibrary-to-not-assume-the-base-ad.patch"
+      fi
+    override-build: |
+      craftctl default
+      make check
+    prime:
+      - bin/patchelf
+
+  chisel:
+    plugin: nil
+    stage-snaps:
+      - chisel/latest/candidate
+    overlay-packages:
+      # Needs to be an overlay package to execute the maintainer scripts
+      - ca-certificates
+    organize:
+      bin/chisel: usr/libexec/snapcraft/chisel
+    stage:
+      - usr/libexec/snapcraft/chisel
+
+entrypoint-service: snapcraft
+
+environment:
+  PEBBLE_VERBOSE: 1
+
+services:
+  snapcraft:
+    override: replace
+    command: /bin/run-snapcraft.sh [ pack ]
+    working-dir: /project
+    startup: enabled
+    on-success: shutdown
+    on-failure: shutdown
+    environment:
+      # default to destructive builds
+      SNAPCRAFT_BUILD_ENVIRONMENT: host
+      # put libexec on the path, for craftctl
+      PATH: /usr/libexec/snapcraft:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

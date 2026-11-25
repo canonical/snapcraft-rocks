@@ -1,0 +1,18 @@
+summary: Check the building and linting of classic snaps
+
+execute: |
+  # pack the snap
+  run_snapcraft pack 2>&1 | tee output.txt
+
+  # Check that the rpath was fixed
+  expected_rpath="Proposed rpath=\['/snap/${SNAPCRAFT_BASE}/current/lib/x86_64-linux-gnu'\]"
+  MATCH "$expected_rpath" < output.txt
+
+  # Check that the linter is working (by declaring  that libcurl was not found)
+  expected_libcurl="library: bin/hello-classic: missing dependency 'libcurl"
+  MATCH "$expected_libcurl" < output.txt
+
+  # Check that libraries that are *not* packed on the snap but *are* present on
+  # the base snap are not listed as missing
+  unexpected_libresolv="library: bin/hello-classic: missing dependency 'libresolv.so"
+  NOMATCH "$unexpected_libresolv" < output.txt

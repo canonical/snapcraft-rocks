@@ -1,0 +1,24 @@
+name: package-repositories
+version: "1.0"
+summary: test
+description: package-repositories
+grade: devel
+confinement: strict
+base: SNAPCRAFT_BASE
+build-base: SNAPCRAFT_BUILD_BASE
+
+parts:
+  test-ppa:
+    plugin: nil
+    build-packages:
+      - test-ppa
+    stage-packages:
+      - test-ppa
+
+package-repositories:
+  - type: apt
+    formats: [deb, deb-src]
+    components: [main]
+    suites: [focal]
+    key-id: 78E1918602959B9C59103100F1831DDAFC42E99D
+    url: http://ppa.launchpad.net/snappy-dev/snapcraft-daily/ubuntu
