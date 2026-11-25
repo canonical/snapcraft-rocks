@@ -4,9 +4,15 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - 'rocks/**'
+      - '.github/workflows/build-rock.yaml'
   push:
     branches:
       - main
+    paths:
+      - 'rocks/**'
+      - '.github/workflows/build-rock.yaml'
 
 jobs:
   build-and-test-rock:
