@@ -14,9 +14,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: ubuntu-24.04
+          - runner: ubuntu-26.04
             arch: amd64
-          - runner: ubuntu-24.04-arm
+          - runner: ubuntu-26.04-arm
             arch: arm64
     runs-on: ${{ matrix.runner }}
     steps:
@@ -32,7 +32,7 @@ jobs:
       # craft-actions/rockcraft/pack doesn't work with 'test' (craft-actions#162)
       - name: Build and test rock
         if: matrix.arch == 'amd64'
-        run: CI=1 rockcraft test
+        run: rockcraft test
 
       # the test suite fails on arm64 (snapcraft#6597)
       - name: Build rock
