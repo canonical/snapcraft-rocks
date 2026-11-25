@@ -3,22 +3,35 @@ name: Build, test and publish rock
 on:
   pull_request:
     branches:
-      - 'core2[246]-[789]'
+      - main
   push:
     branches:
-      - 'core2[246]-[789]'
+      - main
 
 jobs:
   build-and-test-rock:
-    name: build-and-test-rock (${{ matrix.arch }})
+    name: build-and-test-rock (${{ matrix.rock }}, ${{ matrix.arch }})
     strategy:
+      fail-fast: false
       matrix:
+        rock:
+          - core22_9
+          - core24_9
+          - core26_9
+        arch:
+          - amd64
+          - arm64
         include:
-          - runner: ubuntu-26.04
-            arch: amd64
-          - runner: ubuntu-26.04-arm
-            arch: arm64
+          - arch: amd64
+            runner: ubuntu-26.04
+          - arch: arm64
+            runner: ubuntu-26.04-arm
     runs-on: ${{ matrix.runner }}
+    env:
+      ROCKCRAFT_EXPERIMENTAL_MONOREPO: "1"
+    defaults:
+      run:
+        working-directory: rocks/${{ matrix.rock }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -39,36 +52,34 @@ jobs:
         if: matrix.arch == 'arm64'
         run: rockcraft pack
 
-      - name: Get rock name
-        id: vars
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]
-          then
-            echo "rockname=pr-${{ github.event.number }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "rockname=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Upload rock
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: snapcraft-${{ matrix.arch }}-rock
-          path: '*.rock'
+          name: snapcraft-${{ matrix.rock }}-${{ matrix.arch }}-rock
+          path: rocks/${{ matrix.rock }}/*.rock
 
 
   publish-rock:
+    name: publish-rock (${{ matrix.rock }})
     runs-on: [self-hosted, amd64]
     needs: [build-and-test-rock]
     # Not on pull requests; only when they're merged
     if: github.event_name == 'push'
+    strategy:
+      fail-fast: false
+      matrix:
+        rock:
+          - core22_9
+          - core24_9
+          - core26_9
     permissions:
       packages: write
-      contents: write
+      contents: read
     steps:
       - name: Download rock artifact
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          pattern: snapcraft-*-rock
+          pattern: snapcraft-${{ matrix.rock }}-*-rock
           merge-multiple: true
       - name: Install rockcraft
         run: sudo snap install --classic rockcraft
@@ -84,10 +95,11 @@ jobs:
 
           set -x
 
-          # Split the base branch name ("core22-7") into core ("core22") and version ("7")
-          array_ref=(${GITHUB_REF_NAME//-/ })
-          snapcraft_core=${array_ref[0]}
-          snapcraft_version=${array_ref[1]}
+          # Split the rock directory name ("core26_9") into core ("core26") and Snapcraft version series ("9").
+          snapcraft_core=${{ matrix.rock }}
+          snapcraft_core=${snapcraft_core%_*}
+          snapcraft_version=${{ matrix.rock }}
+          snapcraft_version=${snapcraft_version##*_}
           tag="${snapcraft_version}_${snapcraft_core}"
           target_image="ghcr.io/${{github.repository_owner}}/snapcraft"
 

@@ -3,14 +3,14 @@ name: Run linters
 on:
   pull_request:
     branches:
-      - 'core2[246]-[789]'
+      - main
   push:
     branches:
-      - 'core2[246]-[789]'
+      - main
 
 jobs:
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
         run: |
@@ -21,12 +21,11 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-          submodules: true
 
       - name: Run ShellCheck
         run: |
-          ./tools/external/snapd-testing-tools/utils/spread-shellcheck tests/spread/ rockcraft-test.yaml
-          shellcheck --shell=bash spread/.extension tools/spread/run_snapcraft
+          find rocks -name '*.sh' -o -name '.extension' -o -path '*/tools/spread/*' -type f |
+            xargs shellcheck --shell=bash --exclude=SC1091
 
       - name: Run yamllint
         run: |

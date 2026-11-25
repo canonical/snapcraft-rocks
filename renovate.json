@@ -7,7 +7,7 @@
     "dependencies"
   ],
   "baseBranchPatterns": [
-    "/^core\\d\\d-\\d/"
+    "main"
   ],
   "customManagers": [
     {
