@@ -1,2 +1,7 @@
 *.rock
-
+rocks/*/tests/spread/**/parts
+rocks/*/tests/spread/**/prime
+rocks/*/tests/spread/**/stage
+rocks/*/tests/spread/**/*.snap
+.craft-spread-*/
+.spread-reuse.*.yaml

@@ -1,0 +1,4 @@
+summary: build a snap with chisel slices
+
+execute: |
+  run_snapcraft pack

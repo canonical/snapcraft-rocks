@@ -1,0 +1,7 @@
+summary: build a snap using craftctl commands
+
+execute: |
+  run_snapcraft pack
+
+  # The version is set by craftctl
+  test -f craftctl_22_amd64.snap
