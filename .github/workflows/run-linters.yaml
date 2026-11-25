@@ -1,0 +1,33 @@
+name: Run linters
+
+on:
+  pull_request:
+    branches:
+      - 'core2[246]-[789]'
+  push:
+    branches:
+      - 'core2[246]-[789]'
+
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo snap install shellcheck
+          pip install -U yamllint
+
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Run ShellCheck
+        run: |
+          ./tools/external/snapd-testing-tools/utils/spread-shellcheck tests/spread/ rockcraft-test.yaml
+          shellcheck --shell=bash spread/.extension tools/spread/run_snapcraft
+
+      - name: Run yamllint
+        run: |
+          yamllint --strict .

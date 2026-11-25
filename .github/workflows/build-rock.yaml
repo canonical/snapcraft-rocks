@@ -1,21 +1,119 @@
-name: Build rock
+name: Build, test and publish rock
 
 on:
   pull_request:
     branches:
-      - 'core2[24]-[78]'
+      - 'core2[246]-[789]'
   push:
     branches:
-      - 'core2[24]-[78]'
+      - 'core2[246]-[789]'
 
 jobs:
-  build-rock:
-    runs-on: ubuntu-22.04
+  build-and-test-rock:
+    name: build-and-test-rock (${{ matrix.arch }})
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-26.04
+            arch: amd64
+          - runner: ubuntu-26.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-    
-      - name: Build rock
-        uses: canonical/craft-actions/rockcraft-pack@main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Rockcraft
+        # follows main to test our own actions
+        uses: canonical/craft-actions/rockcraft/setup@main
         with:
-          rockcraft-channel: candidate
+          channel: candidate
+
+      # craft-actions/rockcraft/pack doesn't work with 'test' (craft-actions#162)
+      - name: Build and test rock
+        if: matrix.arch == 'amd64'
+        run: rockcraft test
+
+      # the test suite fails on arm64 (snapcraft#6597)
+      - name: Build rock
+        if: matrix.arch == 'arm64'
+        run: rockcraft pack
+
+      - name: Get rock name
+        id: vars
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]
+          then
+            echo "rockname=pr-${{ github.event.number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "rockname=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload rock
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: snapcraft-${{ matrix.arch }}-rock
+          path: '*.rock'
+
+
+  publish-rock:
+    runs-on: [self-hosted, amd64]
+    needs: [build-and-test-rock]
+    # Not on pull requests; only when they're merged
+    if: github.event_name == 'push'
+    permissions:
+      packages: write
+      contents: write
+    steps:
+      - name: Download rock artifact
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: snapcraft-*-rock
+          merge-multiple: true
+      - name: Install rockcraft
+        run: sudo snap install --classic rockcraft
+      - name: Log in to the Container registry
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish rock to Github Container Registry
+        run: |
+          rockcraft.skopeo login ghcr.io -u ${{ github.actor }} -p "${{ secrets.GITHUB_TOKEN }}"
+
+          set -x
+
+          # Split the base branch name ("core22-7") into core ("core22") and version ("7")
+          array_ref=(${GITHUB_REF_NAME//-/ })
+          snapcraft_core=${array_ref[0]}
+          snapcraft_version=${array_ref[1]}
+          tag="${snapcraft_version}_${snapcraft_core}"
+          target_image="ghcr.io/${{github.repository_owner}}/snapcraft"
+
+          multi_arch_image_name="${target_image}:${tag}"
+
+          # Upload each rock to the container registry
+          declare -a digests=()
+          for rock in *.rock; do
+            digest=$(rockcraft.skopeo --insecure-policy inspect "oci-archive:${rock}" --format "{{ .Digest }}")
+            digests+=($digest)
+            source_rock="oci-archive:${rock}"
+            dest_image="docker://${target_image}@${digest}"
+
+            rockcraft.skopeo --insecure-policy copy ${source_rock} ${dest_image}
+          done
+
+          # Create and upload a multi-arch manifest
+          args=("manifest" "create" "${multi_arch_image_name}")
+          for digest in "${digests[@]}"; do
+              args+=(--amend "${target_image}@${digest}")
+          done
+          docker "${args[@]}"
+          manifest=$(docker manifest push "${multi_arch_image_name}")
+
+          echo "Image is available at ${target_image}"
+          echo "Manifest digest: ${manifest}"
+
+          echo "Published image: ${multi_arch_image_name}" >> "${GITHUB_STEP_SUMMARY}"
+          echo "Manifest: ${manifest}" >> "${GITHUB_STEP_SUMMARY}"

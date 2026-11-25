@@ -1,0 +1,11 @@
+---
+
+extends: relaxed
+
+ignore:
+  - 'tools/external/'
+
+rules:
+  # Disable line length limit because the build scripts can
+  # get fairly long
+  line-length: disable
