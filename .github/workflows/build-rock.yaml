@@ -29,10 +29,12 @@ jobs:
         with:
           channel: candidate
 
+      # craft-actions/rockcraft/pack doesn't work with 'test' (craft-actions#162)
       - name: Build and test rock
         if: matrix.arch == 'amd64'
         run: CI=1 rockcraft test
 
+      # the test suite fails on arm64 (snapcraft#6597)
       - name: Build rock
         if: matrix.arch == 'arm64'
         run: rockcraft pack
